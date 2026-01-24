@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, ShoppingBag, X, ArrowLeft, Trash2, Check, Truck, Lock, ChevronLeft, ChevronRight, Instagram, Phone } from 'lucide-react';
 import { supabase } from './lib/supabase';
-import Link from 'next/link'; // السر هنا لربط الصفحات
+import Link from 'next/link'; 
 
 const SHIPPING_RATES: { [key: string]: number } = {
   "Cairo": 95, "Giza": 95, "Alexandria": 100, "Behira": 100, "Delta & Canal": 110,
@@ -37,6 +37,8 @@ export default function Home() {
   }, []);
 
   const latestDrops = products.slice(0, 4); 
+  // استخراج الأقسام عشان تظهر في المنيو
+  const categories = [...new Set(products.map(p => p.category))];
 
   const [checkoutForm, setCheckoutForm] = useState({ 
     firstName: '', secondName: '', fullAddress: '', 
@@ -55,11 +57,11 @@ export default function Home() {
 
   const placeOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    const fullAddressString = `Add: ${checkoutForm.fullAddress}, Bldg: ${checkoutForm.buildingNumber}, Floor: ${checkoutForm.floorNumber}, Apt: ${checkoutForm.apartmentNumber}`;
     const { error } = await supabase.from('orders').insert([{
       customer_name: `${checkoutForm.firstName} ${checkoutForm.secondName}`,
       phone: checkoutForm.phone, phone2: checkoutForm.phone2,
-      address: fullAddressString, governorate: checkoutForm.governorate,
+      address: `${checkoutForm.fullAddress}, Bldg: ${checkoutForm.buildingNumber}`, 
+      governorate: checkoutForm.governorate,
       delivery_fee: SHIPPING_RATES[checkoutForm.governorate] || 95,
       items: cart, total_price: calculateTotal()
     }]);
@@ -77,14 +79,27 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Menu Sidebar */}
+      {/* Menu Sidebar - رجعتلك كل الـ Links هنا */}
       {isMenuOpen && <div className="fixed inset-0 bg-black/60 z-[60]" onClick={() => setIsMenuOpen(false)} />}
       <div className={`fixed top-0 left-0 h-full w-[85%] max-w-sm bg-[#2F4F4F] z-[70] transition-transform duration-300 flex flex-col ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex justify-between p-6 border-b border-white/10"><span className="text-xl font-serif">MENU</span><button onClick={() => setIsMenuOpen(false)} className="cursor-pointer"><X className="w-8 h-8" /></button></div>
         <div className="p-8 flex flex-col">
-            <button onClick={() => {setActiveView('home'); setIsMenuOpen(false);}} className="w-full text-left text-xl font-serif py-3 border-b border-white/10 cursor-pointer">Home</button>
-            {/* استخدام Link للذهاب لصفحة الـ Shop الجديدة */}
-            <Link href="/shop" onClick={() => setIsMenuOpen(false)} className="w-full text-left text-xl font-serif py-3 border-b border-white/20 mb-4 cursor-pointer">Shop All</Link>
+            <button onClick={() => {setActiveView('home'); setIsMenuOpen(false);}} className="w-full text-left text-xl font-serif py-3 border-b border-white/10 cursor-pointer text-[#F2EFE4]">Home</button>
+            
+            {/* اللينك اللي كان ناقص عشان يفتح كل المنتجات */}
+            <Link href="/shop" onClick={() => setIsMenuOpen(false)} className="w-full text-left text-xl font-serif py-3 border-b border-white/20 mb-4 cursor-pointer text-[#F2EFE4]">Shop All</Link>
+
+            {/* عرض الأقسام بشكل منظم */}
+            {categories.map(cat => (
+              <Link key={cat} href="/shop" onClick={() => setIsMenuOpen(false)} className="w-full text-left text-lg opacity-80 py-2 hover:text-[#D4AF37] transition cursor-pointer text-[#F2EFE4]">
+                {cat}s
+              </Link>
+            ))}
+            
+            <div className="mt-12 border-t border-white/10 pt-8 flex gap-6">
+                <a href="https://www.instagram.com/accera.eg" target="_blank" rel="noreferrer"><Instagram className="w-6 h-6" /></a>
+                <a href="https://wa.me/201124688327" target="_blank" rel="noreferrer"><Phone className="w-6 h-6" /></a>
+            </div>
         </div>
       </div>
 
@@ -104,13 +119,11 @@ export default function Home() {
         <div className="p-6 bg-white border-t"><button onClick={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }} disabled={cart.length === 0} className="w-full py-4 bg-[#355E61] text-white font-bold uppercase disabled:bg-gray-300 cursor-pointer">CHECKOUT</button></div>
       </div>
 
-      {/* Main Home View */}
       {activeView === 'home' && (
         <>
           <main className="container mx-auto px-6 py-10 text-center">
             <h1 className="text-5xl md:text-7xl font-serif mb-6 tracking-widest uppercase font-bold">Accera</h1>
             <p className="text-sm md:text-base font-light italic opacity-70 mb-8 tracking-wide max-w-sm mx-auto"> "Elevate your everyday elegance." </p>
-            {/* السر هنا: استخدام Link بدل Button لصفحة الـ Shop */}
             <Link href="/shop" className="inline-block bg-[#F2EFE4] text-[#355E61] px-10 py-3 font-semibold hover:bg-white transition uppercase tracking-widest cursor-pointer shadow-lg">
               SHOP COLLECTION
             </Link>
@@ -125,28 +138,26 @@ export default function Home() {
         </>
       )}
 
-      {/* Product View remains for now within Home context */}
       {activeView === 'product_details' && selectedProduct && <ProductDetailView product={selectedProduct} onBack={() => setActiveView('home')} onAdd={addToCart} />}
 
-      {/* Checkout View */}
       {isCheckoutOpen && (
         <div className="fixed inset-0 bg-[#355E61] z-[100] overflow-y-auto text-[#F2EFE4]">
            <div className="max-w-4xl mx-auto p-8">
               <div className="flex justify-between items-center mb-10">
-                  <h2 className="text-3xl font-bold font-serif uppercase">Checkout</h2>
-                  <button onClick={() => setIsCheckoutOpen(false)}><X className="w-6 h-6"/></button>
+                  <h2 className="text-3xl font-bold font-serif uppercase text-[#F2EFE4]">Checkout</h2>
+                  <button onClick={() => setIsCheckoutOpen(false)} className="text-[#F2EFE4]"><X className="w-6 h-6"/></button>
               </div>
               <form onSubmit={placeOrder} className="space-y-4 text-black">
                   <div className="grid grid-cols-2 gap-4">
-                      <input required placeholder="First Name" className="p-3 rounded-md" value={checkoutForm.firstName} onChange={(e:any) => setCheckoutForm({...checkoutForm, firstName: e.target.value})} />
-                      <input required placeholder="Second Name" className="p-3 rounded-md" value={checkoutForm.secondName} onChange={(e:any) => setCheckoutForm({...checkoutForm, secondName: e.target.value})} />
+                      <input required placeholder="First Name" className="p-3 rounded-md bg-white outline-none" value={checkoutForm.firstName} onChange={(e:any) => setCheckoutForm({...checkoutForm, firstName: e.target.value})} />
+                      <input required placeholder="Second Name" className="p-3 rounded-md bg-white outline-none" value={checkoutForm.secondName} onChange={(e:any) => setCheckoutForm({...checkoutForm, secondName: e.target.value})} />
                   </div>
-                  <input required placeholder="Phone" className="w-full p-3 rounded-md" value={checkoutForm.phone} onChange={(e:any) => setCheckoutForm({...checkoutForm, phone: e.target.value})} />
-                  <input required placeholder="Full Address" className="w-full p-3 rounded-md" value={checkoutForm.fullAddress} onChange={(e:any) => setCheckoutForm({...checkoutForm, fullAddress: e.target.value})} />
-                  <select className="w-full p-3 rounded-md" value={checkoutForm.governorate} onChange={(e) => setCheckoutForm({...checkoutForm, governorate: e.target.value})}>
+                  <input required placeholder="Phone" className="w-full p-3 rounded-md bg-white outline-none" value={checkoutForm.phone} onChange={(e:any) => setCheckoutForm({...checkoutForm, phone: e.target.value})} />
+                  <input required placeholder="Full Address" className="w-full p-3 rounded-md bg-white outline-none" value={checkoutForm.fullAddress} onChange={(e:any) => setCheckoutForm({...checkoutForm, fullAddress: e.target.value})} />
+                  <select className="w-full p-3 rounded-md bg-white outline-none" value={checkoutForm.governorate} onChange={(e) => setCheckoutForm({...checkoutForm, governorate: e.target.value})}>
                       {Object.keys(SHIPPING_RATES).map((gov) => <option key={gov} value={gov}>{gov}</option>)}
                   </select>
-                  <button type="submit" className="w-full bg-[#F2EFE4] text-[#355E61] py-5 rounded-lg font-bold uppercase tracking-widest mt-4">Complete Order</button>
+                  <button type="submit" className="w-full bg-[#F2EFE4] text-[#355E61] py-5 rounded-lg font-bold uppercase tracking-widest mt-4 cursor-pointer hover:bg-white transition-all">Complete Order</button>
               </form>
            </div>
         </div>
@@ -155,7 +166,6 @@ export default function Home() {
   );
 }
 
-// Reusable Components
 function SmallCard({ item, onClick, onAdd }: any) {
   const [isHovered, setIsHovered] = useState(false);
   return (
@@ -178,15 +188,15 @@ function ProductDetailView({ product, onBack, onAdd }: any) {
   const [currentIndex, setCurrentIndex] = useState(0);
   return (
     <div className="container mx-auto px-6 py-12">
-      <button onClick={onBack} className="flex items-center gap-2 text-white/70 mb-8 font-bold"><ArrowLeft className="w-5 h-5"/> Back</button>
+      <button onClick={onBack} className="flex items-center gap-2 text-white/70 mb-8 font-bold cursor-pointer"><ArrowLeft className="w-5 h-5"/> Back</button>
       <div className="flex flex-col md:flex-row gap-8">
-        <div className="w-full md:w-1/2 aspect-square relative bg-white/5 rounded-lg overflow-hidden">
+        <div className="w-full md:w-1/2 aspect-square relative bg-white/5 rounded-lg overflow-hidden border border-white/10">
             <img src={images[currentIndex]} className="w-full h-full object-cover" />
         </div>
         <div className="w-full md:w-1/2">
-          <h1 className="text-3xl font-serif mb-4 uppercase font-bold">{product.name}</h1>
-          <p className="text-2xl mb-8">{product.price}</p>
-          <button onClick={() => onAdd(product)} className="w-full bg-[#F2EFE4] text-[#355E61] py-4 text-lg font-bold uppercase tracking-widest">Add to Cart</button>
+          <h1 className="text-3xl font-serif mb-4 uppercase font-bold text-[#F2EFE4]">{product.name}</h1>
+          <p className="text-2xl mb-8 opacity-90">{product.price}</p>
+          <button onClick={() => onAdd(product)} className="w-full bg-[#F2EFE4] text-[#355E61] py-4 text-lg font-bold uppercase tracking-widest cursor-pointer hover:bg-white transition-all shadow-lg">Add to Cart</button>
         </div>
       </div>
     </div>
