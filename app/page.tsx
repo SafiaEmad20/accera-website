@@ -6,6 +6,7 @@ import { supabase } from './lib/supabase';
 import Link from 'next/link'; 
 import { useRouter } from 'next/navigation';
 
+
 const SHIPPING_RATES: { [key: string]: number } = {
   "Cairo": 95, "Giza": 95, "Alexandria": 100, "Behira": 100, "Delta & Canal": 110,
   "Near Upper ": 125, "Far Upper & Matrouh": 140, "North Coast": 145, "Sini & New Valley": 160, 
@@ -97,23 +98,51 @@ export default function Home() {
           <span className="text-xl font-serif text-[#F2EFE4]">MENU</span>
           <button onClick={() => setIsMenuOpen(false)} className="cursor-pointer text-[#F2EFE4]"><X className="w-8 h-8" /></button>
         </div>
-        {/* Added overflow-y-auto to enable scrolling */}
-        <div className="px-8 pt-2 flex flex-col flex-1 overflow-y-auto">
-            <button onClick={() => {setActiveView('home'); setIsMenuOpen(false);}} className="w-full text-left text-xl font-serif py-4 border-b border-white/10 cursor-pointer text-[#F2EFE4]">Home</button>
-            <Link href="/shop" onClick={() => setIsMenuOpen(false)} className="w-full text-left text-xl font-serif py-4 border-b border-white/20 mb-6 cursor-pointer text-[#F2EFE4]">Shop All</Link>
-            <div className="space-y-2">
-              {/* الترتيب اليدوي اللي إنتي عايزاه */}
-              {['Ring', 'Bracelet', 'Necklace', 'Handchain', 'Cuff', 'Bangles'].map(cat => (
-                <button 
-                  key={cat} 
-                  onClick={() => { openCategoryPage(cat); setIsMenuOpen(false); }} 
-                  className="w-full text-left text-lg opacity-80 py-2 hover:text-[#D4AF37] transition cursor-pointer text-[#F2EFE4]"
-                >
-                  {/* بيعرض الاسم من الـ Array ويضيف s للجمع (ما عدا Bangles لأنها مجموعة جاهزة) */}
-                  {cat === 'Bangles' ? cat : `${cat}s`}
-                </button>
-              ))}
-            </div>
+        
+{/* Added overflow-y-auto to enable scrolling */}
+<div className="px-8 pt-2 flex flex-col flex-1 overflow-y-auto">
+
+  {/* Home */}
+  <button
+    onClick={() => {
+      setActiveView('home')
+      setIsMenuOpen(false)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }}
+    className="w-full text-left text-xl font-serif py-4 border-b border-white/10 cursor-pointer text-[#F2EFE4]"
+  >
+    Home
+  </button>
+
+  {/* Shop Collection */}
+  <button
+    onClick={() => {
+      setActiveView('shop')
+      setIsMenuOpen(false)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }}
+    className="w-full text-left text-xl font-serif py-4 border-b border-white/10 cursor-pointer text-[#F2EFE4]"
+  >
+    Shop Collection
+  </button>
+
+  {/* Categories */}
+  <div className="space-y-2">
+    {['Ring', 'Bracelet', 'Necklace', 'Handchain', 'Cuff', 'Bangles'].map(cat => (
+      <button 
+        key={cat}
+        onClick={() => {
+          openCategoryPage(cat)
+          setIsMenuOpen(false)
+        }}
+        className="w-full text-left text-lg opacity-80 py-2 hover:text-[#D4AF37] transition cursor-pointer text-[#F2EFE4]"
+      >
+        {cat === 'Bangles' ? cat : `${cat}s`}
+      </button>
+    ))}
+
+</div>
+
             <div className="mt-auto border-t border-white/10 pt-8 pb-4">
               <h4 className="text-xs font-bold uppercase tracking-[0.2em] mb-6 opacity-40 text-[#F2EFE4]">Contact Us</h4>
               <div className="flex flex-col gap-6">
@@ -281,18 +310,51 @@ export default function Home() {
       )}
 
       {activeView === 'shop' && (
-        <div className="container mx-auto px-6 py-12 space-y-16">
-           {categories.map((category) => {
-             const categoryItems = products.filter(p => p.category === category);
-             if (categoryItems.length === 0) return null;
-             return <CategoryPreview key={category} title={`${category}s`} items={categoryItems} onViewAll={() => openCategoryPage(category)} onProductClick={openProductPage} onAdd={addToCart} />;
-           })}
-        </div>
-      )}
+  <div className="container mx-auto px-6 py-8"> {/* قللنا المسافة الرأسية شوية */}
+     
+     {/* 1. ضفنا الهيدر (العنوان وزرار الرجوع) عشان تبقى زي صفحة Shop Collection */}
+     <div className="flex items-center gap-4 mb-8">
+        <button onClick={() => setActiveView('home')} className="p-2 hover:bg-white/10 rounded-full cursor-pointer text-[#F2EFE4]">
+          <ArrowLeft className="w-6 h-6" />
+        </button>
+        <h1 className="text-3xl font-serif border-l-4 border-white/20 pl-4 uppercase tracking-widest text-[#F2EFE4]">Shop All</h1>
+     </div>
+
+     <div className="space-y-12">
+       {/* 2. هنا التعديل المهم: حطينا الترتيب اليدوي اللي انتي عايزاه بالظبط */}
+       {['Ring', 'Bracelet', 'Necklace', 'Handchain', 'Cuff', 'Bangles'].map((category) => {
+         
+         const categoryItems = products.filter(p => p.category === category);
+         
+         // لو القسم فاضي ما تعرضيهوش
+         if (categoryItems.length === 0) return null;
+         
+         return (
+           <CategoryPreview 
+             key={category} 
+             // تظبيط الاسم: Bangles زي ما هي والباقي ياخد s
+             title={category === 'Bangles' ? category : `${category}s`} 
+             items={categoryItems} 
+             onViewAll={() => openCategoryPage(category)} 
+             onProductClick={openProductPage} 
+             onAdd={addToCart} 
+           />
+         );
+       })}
+     </div>
+  </div>
+)}
 
       {activeView === 'category_view' && (
-        <SectionView title={`${selectedCategoryName}s`} items={products.filter(p => p.category === selectedCategoryName)} onBack={() => setActiveView('shop')} onProductClick={openProductPage} onAdd={addToCart} />
-      )}
+  <SectionView
+    title={`${selectedCategoryName}s`}
+    items={products.filter(p => p.category === selectedCategoryName)}
+    onBack={() => setActiveView('shop')}
+    onProductClick={openProductPage}
+    onAdd={addToCart}
+  />
+)}
+
 
       {activeView === 'product_details' && selectedProduct && (
         <ProductDetailView product={selectedProduct} onBack={() => setActiveView('home')} onAdd={addToCart} />
