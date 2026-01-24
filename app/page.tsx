@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, ShoppingBag, X, ArrowLeft, Trash2, Check, Truck, Lock, ChevronLeft, ChevronRight, Instagram, Phone } from 'lucide-react';
 import { supabase } from './lib/supabase';
+import Link from 'next/link'; // السر هنا لربط الصفحات
 
 const SHIPPING_RATES: { [key: string]: number } = {
   "Cairo": 95, "Giza": 95, "Alexandria": 100, "Behira": 100, "Delta & Canal": 110,
@@ -14,20 +15,18 @@ export default function Home() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [activeView, setActiveView] = useState('home'); 
-  const [selectedCategoryName, setSelectedCategoryName] = useState('');
   const [cart, setCart] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const { data, error } = await supabase.from('products').select('*').order('id', { ascending: false }); 
+      const { data } = await supabase.from('products').select('*').order('id', { ascending: false }); 
       if (data) {
         const formattedData = data.map(item => ({
           ...item,
           price: typeof item.price === 'number' ? `${item.price} EGP` : item.price,
-          mainImage: item.image_url.startsWith('http') ? item.image_url : 
-                     item.image_url.startsWith('/') ? item.image_url : '/' + item.image_url,
+          mainImage: item.image_url.startsWith('http') ? item.image_url : '/' + item.image_url,
           hoverImage: item.image2 ? (item.image2.startsWith('http') ? item.image2 : '/' + item.image2) : null,
           sizes: item.sizes ? item.sizes.split(',').map((s: string) => s.trim()) : []
         }));
@@ -37,7 +36,6 @@ export default function Home() {
     fetchProducts();
   }, []);
 
-  const categories = [...new Set(products.map(p => p.category))];
   const latestDrops = products.slice(0, 4); 
 
   const [checkoutForm, setCheckoutForm] = useState({ 
@@ -49,8 +47,6 @@ export default function Home() {
   const addToCart = (product: any) => { setCart([...cart, product]); setIsCartOpen(true); };
   const removeFromCart = (indexToRemove: number) => { setCart(cart.filter((_, index) => index !== indexToRemove)); };
   const openProductPage = (product: any) => { setSelectedProduct(product); setActiveView('product_details'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-  const openCategoryPage = (categoryName: string) => { setSelectedCategoryName(categoryName); setActiveView('category_view'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-  const navigateTo = (viewName: string) => { setActiveView(viewName); setIsMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
   const calculateTotal = () => {
     const subtotal = cart.reduce((t, i) => t + (parseInt(i.price.replace(" EGP", "")) || 0), 0);
@@ -59,59 +55,40 @@ export default function Home() {
 
   const placeOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    // تصحيح الأخطاء: استخدام المسميات الجديدة للـ Inputs
     const fullAddressString = `Add: ${checkoutForm.fullAddress}, Bldg: ${checkoutForm.buildingNumber}, Floor: ${checkoutForm.floorNumber}, Apt: ${checkoutForm.apartmentNumber}`;
-    
     const { error } = await supabase.from('orders').insert([{
       customer_name: `${checkoutForm.firstName} ${checkoutForm.secondName}`,
-      phone: checkoutForm.phone, 
-      phone2: checkoutForm.phone2,
-      address: fullAddressString, 
-      governorate: checkoutForm.governorate,
+      phone: checkoutForm.phone, phone2: checkoutForm.phone2,
+      address: fullAddressString, governorate: checkoutForm.governorate,
       delivery_fee: SHIPPING_RATES[checkoutForm.governorate] || 95,
-      items: cart, 
-      total_price: calculateTotal()
+      items: cart, total_price: calculateTotal()
     }]);
-
-    if (!error) { 
-      alert(`Order Placed Successfully! 🎉`); 
-      setCart([]); 
-      setIsCheckoutOpen(false); 
-    } else {
-      alert("Error placing order. Please try again.");
-    }
+    if (!error) { alert(`Order Placed Successfully! 🎉`); setCart([]); setIsCheckoutOpen(false); }
   };
 
   return (
     <div className="min-h-screen bg-[#355E61] text-[#F2EFE4] font-sans relative">
       <nav className="flex justify-between items-center p-6 border-b border-[#F2EFE4]/20 sticky top-0 bg-[#355E61] z-50 shadow-md">
         <button onClick={() => setIsMenuOpen(true)} className="p-1 hover:bg-white/10 rounded-md cursor-pointer"><Menu className="w-7 h-7" /></button>
-        <div onClick={() => navigateTo('home')} className="text-2xl font-serif tracking-widest uppercase font-bold absolute left-1/2 -translate-x-1/2 cursor-pointer hover:opacity-80 transition-opacity">Accera</div>
+        <div onClick={() => setActiveView('home')} className="text-2xl font-serif tracking-widest uppercase font-bold absolute left-1/2 -translate-x-1/2 cursor-pointer hover:opacity-80 transition-opacity">Accera</div>
         <div className="relative cursor-pointer" onClick={() => setIsCartOpen(true)}>
           <ShoppingBag className="w-6 h-6 hover:text-[#F2EFE4]" />
           {cart.length > 0 && <span className="absolute -top-2 -right-2 bg-[#F2EFE4] text-[#355E61] text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">{cart.length}</span>}
         </div>
       </nav>
 
+      {/* Menu Sidebar */}
       {isMenuOpen && <div className="fixed inset-0 bg-black/60 z-[60]" onClick={() => setIsMenuOpen(false)} />}
       <div className={`fixed top-0 left-0 h-full w-[85%] max-w-sm bg-[#2F4F4F] z-[70] transition-transform duration-300 flex flex-col ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex justify-between p-6 border-b border-white/10"><span className="text-xl font-serif">MENU</span><button onClick={() => setIsMenuOpen(false)} className="cursor-pointer"><X className="w-8 h-8" /></button></div>
         <div className="p-8 flex flex-col">
-            <button onClick={() => navigateTo('home')} className="w-full text-left text-xl font-serif py-3 border-b border-white/10 cursor-pointer">Home</button>
-            <button onClick={() => navigateTo('shop')} className="w-full text-left text-xl font-serif py-3 border-b border-white/20 mb-4 cursor-pointer">Shop All</button>
-            {categories.map(cat => (
-              <button key={cat} onClick={() => { openCategoryPage(cat); setIsMenuOpen(false); }} className="w-full text-left text-lg opacity-80 py-2 hover:text-[#D4AF37] transition cursor-pointer">{cat}s</button>
-            ))}
-            <div className="mt-12 border-t border-white/10 pt-8">
-              <h4 className="text-sm font-bold uppercase tracking-widest mb-4 opacity-50">Contact Us</h4>
-              <div className="flex gap-6">
-                <a href="https://www.instagram.com/accera.eg" target="_blank" rel="noreferrer" className="hover:text-[#F2EFE4] transition cursor-pointer"><Instagram className="w-6 h-6" /></a>
-                <a href="https://wa.me/201124688327" target="_blank" rel="noreferrer" className="hover:text-[#F2EFE4] transition cursor-pointer"><Phone className="w-6 h-6" /></a>
-              </div>
-            </div>
+            <button onClick={() => {setActiveView('home'); setIsMenuOpen(false);}} className="w-full text-left text-xl font-serif py-3 border-b border-white/10 cursor-pointer">Home</button>
+            {/* استخدام Link للذهاب لصفحة الـ Shop الجديدة */}
+            <Link href="/shop" onClick={() => setIsMenuOpen(false)} className="w-full text-left text-xl font-serif py-3 border-b border-white/20 mb-4 cursor-pointer">Shop All</Link>
         </div>
       </div>
 
+      {/* Cart Sidebar */}
       {isCartOpen && <div className="fixed inset-0 bg-black/60 z-[80]" onClick={() => setIsCartOpen(false)} />}
       <div className={`fixed top-0 right-0 h-full w-[90%] max-w-sm bg-[#F2EFE4] text-[#355E61] z-[90] transition-transform duration-300 flex flex-col ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex justify-between p-6 bg-white border-b"><span className="text-xl font-serif font-bold">CART ({cart.length})</span><button onClick={() => setIsCartOpen(false)} className="cursor-pointer"><X className="w-6 h-6" /></button></div>
@@ -119,7 +96,7 @@ export default function Home() {
           {cart.map((item, index) => (
             <div key={index} className="flex gap-4 items-center bg-white p-3 rounded-lg shadow-sm">
               <img src={item.mainImage} className="w-16 h-20 object-cover rounded-sm" />
-              <div className="flex-1"><h4 className="font-bold text-sm">{item.name}</h4>{item.selectedSize && <p className="text-xs text-gray-500">Size: {item.selectedSize}</p>}<p className="font-bold text-sm opacity-70">{item.price}</p></div>
+              <div className="flex-1"><h4 className="font-bold text-sm">{item.name}</h4><p className="font-bold text-sm opacity-70">{item.price}</p></div>
               <button onClick={() => removeFromCart(index)} className="text-red-400 cursor-pointer"><Trash2 className="w-5 h-5" /></button>
             </div>
           ))}
@@ -127,59 +104,18 @@ export default function Home() {
         <div className="p-6 bg-white border-t"><button onClick={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }} disabled={cart.length === 0} className="w-full py-4 bg-[#355E61] text-white font-bold uppercase disabled:bg-gray-300 cursor-pointer">CHECKOUT</button></div>
       </div>
 
-      {isCheckoutOpen && (
-        <div className="fixed inset-0 bg-[#355E61] z-[100] overflow-y-auto text-[#F2EFE4] font-sans">
-          <div className="max-w-4xl mx-auto flex flex-col md:flex-row min-h-screen">
-             <div className="flex-1 p-8 md:p-12 border-r border-white/10">
-                <div className="flex justify-between items-center mb-10">
-                  <h2 onClick={() => { setIsCheckoutOpen(false); setActiveView('home'); }} className="text-3xl font-bold text-[#F2EFE4] font-serif uppercase tracking-tighter cursor-pointer hover:opacity-80 transition-opacity">Accera</h2>
-                  <button onClick={() => setIsCheckoutOpen(false)} className="text-[#F2EFE4] cursor-pointer"><X className="w-6 h-6"/></button>
-                </div>
-                <form onSubmit={placeOrder} className="space-y-4 text-black">
-                   <h3 className="text-lg font-bold uppercase tracking-widest border-white/20 border-b pb-2 mb-4 text-[#F2EFE4]">Delivery Details</h3>
-                   <div className="grid grid-cols-2 gap-4">
-                      <input required placeholder="First Name" className="w-full p-3 rounded-md bg-white outline-none" value={checkoutForm.firstName} onChange={(e:any) => setCheckoutForm({...checkoutForm, firstName: e.target.value})} />
-                      <input required placeholder="Second Name" className="w-full p-3 rounded-md bg-white outline-none" value={checkoutForm.secondName} onChange={(e:any) => setCheckoutForm({...checkoutForm, secondName: e.target.value})} />
-                   </div>
-                   <div className="grid grid-cols-2 gap-4">
-                      <input required placeholder="Phone" className="w-full p-3 rounded-md bg-white outline-none" value={checkoutForm.phone} onChange={(e:any) => setCheckoutForm({...checkoutForm, phone: e.target.value})} />
-                      <input placeholder="Phone 2 (Optional)" className="w-full p-3 rounded-md bg-white outline-none" value={checkoutForm.phone2} onChange={(e:any) => setCheckoutForm({...checkoutForm, phone2: e.target.value})} />
-                   </div>
-                   <input required placeholder="Full Address" className="w-full p-3 rounded-md bg-white outline-none" value={checkoutForm.fullAddress} onChange={(e:any) => setCheckoutForm({...checkoutForm, fullAddress: e.target.value})} />
-                   <div className="grid grid-cols-3 gap-4">
-                      <input required placeholder="Building Number" className="w-full p-3 rounded-md bg-white outline-none" value={checkoutForm.buildingNumber} onChange={(e:any) => setCheckoutForm({...checkoutForm, buildingNumber: e.target.value})} />
-                      <input required placeholder="Floor Number" className="w-full p-3 rounded-md bg-white outline-none" value={checkoutForm.floorNumber} onChange={(e:any) => setCheckoutForm({...checkoutForm, floorNumber: e.target.value})} />
-                      <input required placeholder="Apartment Number" className="w-full p-3 rounded-md bg-white outline-none" value={checkoutForm.apartmentNumber} onChange={(e:any) => setCheckoutForm({...checkoutForm, apartmentNumber: e.target.value})} />
-                   </div>
-                   <div className="grid grid-cols-2 gap-4">
-                      <input required placeholder="City" className="w-full p-3 rounded-md bg-white outline-none" value={checkoutForm.city} onChange={(e:any) => setCheckoutForm({...checkoutForm, city: e.target.value})} />
-                      <select className="w-full p-3 rounded-md bg-white outline-none" value={checkoutForm.governorate} onChange={(e) => setCheckoutForm({...checkoutForm, governorate: e.target.value})}>
-                        {Object.keys(SHIPPING_RATES).map((gov) => <option key={gov} value={gov}>{gov}</option>)}
-                      </select>
-                   </div>
-                   <button type="submit" className="w-full bg-[#F2EFE4] text-[#355E61] py-5 rounded-lg font-bold uppercase tracking-widest hover:bg-white transition-all cursor-pointer mt-4">Complete Order</button>
-                </form>
-             </div>
-             <div className="w-full md:w-[40%] bg-black/10 p-8 md:p-12">
-                <h3 className="text-lg font-bold mb-8 opacity-50 uppercase tracking-widest">Order Summary</h3>
-                <div className="space-y-6">{cart.map((item, i) => <div key={i} className="flex justify-between font-medium"><span>{item.name}</span><span>{item.price}</span></div>)}</div>
-                <div className="border-t border-white/10 mt-8 pt-8 space-y-4">
-                  <div className="flex justify-between opacity-60 font-bold uppercase text-xs tracking-widest"><span>Shipping</span><span>{SHIPPING_RATES[checkoutForm.governorate]} EGP</span></div>
-                  <div className="flex justify-between font-bold text-2xl text-[#D4AF37]"><span>Total</span><span>{calculateTotal()} EGP</span></div>
-                </div>
-             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main Views */}
-      {activeView === 'product_details' && selectedProduct && <ProductDetailView product={selectedProduct} onBack={() => navigateTo('shop')} onAdd={addToCart} />}
+      {/* Main Home View */}
       {activeView === 'home' && (
         <>
           <main className="container mx-auto px-6 py-10 text-center">
             <h1 className="text-5xl md:text-7xl font-serif mb-6 tracking-widest uppercase font-bold">Accera</h1>
             <p className="text-sm md:text-base font-light italic opacity-70 mb-8 tracking-wide max-w-sm mx-auto"> "Elevate your everyday elegance." </p>
-            <button onClick={() => navigateTo('shop')} className="bg-[#F2EFE4] text-[#355E61] px-10 py-3 font-semibold hover:bg-white transition uppercase tracking-widest cursor-pointer">SHOP COLLECTION</button></main>
+            {/* السر هنا: استخدام Link بدل Button لصفحة الـ Shop */}
+            <Link href="/shop" className="inline-block bg-[#F2EFE4] text-[#355E61] px-10 py-3 font-semibold hover:bg-white transition uppercase tracking-widest cursor-pointer shadow-lg">
+              SHOP COLLECTION
+            </Link>
+          </main>
+          
           <section className="container mx-auto px-6 py-4">
               <h2 className="text-3xl font-serif text-center mb-10">Latest Drops</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -188,57 +124,50 @@ export default function Home() {
           </section>
         </>
       )}
-      {activeView === 'shop' && (
-        <div className="container mx-auto px-6 py-12 space-y-6">
-           {categories.map((category) => {
-             const categoryItems = products.filter(p => p.category === category);
-             if (categoryItems.length === 0) return null;
-             return <CategoryPreview key={category} title={`${category}s`} items={categoryItems} onViewAll={() => openCategoryPage(category)} onProductClick={openProductPage} onAdd={addToCart} />;
-           })}
+
+      {/* Product View remains for now within Home context */}
+      {activeView === 'product_details' && selectedProduct && <ProductDetailView product={selectedProduct} onBack={() => setActiveView('home')} onAdd={addToCart} />}
+
+      {/* Checkout View */}
+      {isCheckoutOpen && (
+        <div className="fixed inset-0 bg-[#355E61] z-[100] overflow-y-auto text-[#F2EFE4]">
+           <div className="max-w-4xl mx-auto p-8">
+              <div className="flex justify-between items-center mb-10">
+                  <h2 className="text-3xl font-bold font-serif uppercase">Checkout</h2>
+                  <button onClick={() => setIsCheckoutOpen(false)}><X className="w-6 h-6"/></button>
+              </div>
+              <form onSubmit={placeOrder} className="space-y-4 text-black">
+                  <div className="grid grid-cols-2 gap-4">
+                      <input required placeholder="First Name" className="p-3 rounded-md" value={checkoutForm.firstName} onChange={(e:any) => setCheckoutForm({...checkoutForm, firstName: e.target.value})} />
+                      <input required placeholder="Second Name" className="p-3 rounded-md" value={checkoutForm.secondName} onChange={(e:any) => setCheckoutForm({...checkoutForm, secondName: e.target.value})} />
+                  </div>
+                  <input required placeholder="Phone" className="w-full p-3 rounded-md" value={checkoutForm.phone} onChange={(e:any) => setCheckoutForm({...checkoutForm, phone: e.target.value})} />
+                  <input required placeholder="Full Address" className="w-full p-3 rounded-md" value={checkoutForm.fullAddress} onChange={(e:any) => setCheckoutForm({...checkoutForm, fullAddress: e.target.value})} />
+                  <select className="w-full p-3 rounded-md" value={checkoutForm.governorate} onChange={(e) => setCheckoutForm({...checkoutForm, governorate: e.target.value})}>
+                      {Object.keys(SHIPPING_RATES).map((gov) => <option key={gov} value={gov}>{gov}</option>)}
+                  </select>
+                  <button type="submit" className="w-full bg-[#F2EFE4] text-[#355E61] py-5 rounded-lg font-bold uppercase tracking-widest mt-4">Complete Order</button>
+              </form>
+           </div>
         </div>
       )}
-      {activeView === 'category_view' && <SectionView title={`${selectedCategoryName}s`} items={products.filter(p => p.category === selectedCategoryName)} onBack={() => navigateTo('shop')} onProductClick={openProductPage} onAdd={addToCart} />}
     </div>
   );
 }
 
+// Reusable Components
 function SmallCard({ item, onClick, onAdd }: any) {
-  const [isHovered, setIsHovered] = useState(false); // رجعنا حالة الوقوف بالماوس
-
+  const [isHovered, setIsHovered] = useState(false);
   return (
-    <div 
-      className="group w-full relative" 
-      onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <div className="group w-full relative" onClick={onClick} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       <div className="aspect-[3/4] bg-white/5 relative overflow-hidden rounded-sm border border-white/10 cursor-pointer shadow-lg">
-          {/* الصورة الأساسية */}
-          <img 
-            src={item.mainImage} 
-            alt={item.name} 
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${isHovered && item.hoverImage ? 'opacity-0' : 'opacity-100'}`} 
-          />
-          
-          {/* الصورة الثانية اللي بتظهر بالـ Fade */}
-          {item.hoverImage && (
-            <img 
-              src={item.hoverImage} 
-              alt={item.name} 
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${isHovered ? 'opacity-100' : 'opacity-0'}`} 
-            />
-          )}
-
-          <button 
-            onClick={(e) => { e.stopPropagation(); onAdd({...item, selectedSize: item.sizes?.[0] || null}); }} 
-            className="absolute bottom-0 w-full bg-[#355E61] text-[#F2EFE4] text-xs font-bold uppercase py-3 translate-y-full group-hover:translate-y-0 transition duration-300 z-10 cursor-pointer"
-          >
-            Quick Add
-          </button>
+          <img src={item.mainImage} className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${isHovered && item.hoverImage ? 'opacity-0' : 'opacity-100'}`} />
+          {item.hoverImage && <img src={item.hoverImage} className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${isHovered ? 'opacity-100' : 'opacity-0'}`} />}
+          <button onClick={(e) => { e.stopPropagation(); onAdd({...item}); }} className="absolute bottom-0 w-full bg-[#355E61] text-[#F2EFE4] text-xs font-bold uppercase py-3 translate-y-full group-hover:translate-y-0 transition duration-300 z-10 cursor-pointer">Quick Add</button>
       </div>
       <div className="mt-3 text-center">
-         <h3 className="text-sm font-serif truncate uppercase tracking-widest opacity-80 group-hover:opacity-100 transition-opacity">{item.name}</h3>
-         <span className="text-xs font-medium opacity-50">{item.price}</span>
+          <h3 className="text-sm font-serif truncate uppercase tracking-widest opacity-80">{item.name}</h3>
+          <span className="text-xs font-medium opacity-50">{item.price}</span>
       </div>
     </div>
   );
@@ -248,73 +177,18 @@ function ProductDetailView({ product, onBack, onAdd }: any) {
   const images = [product.mainImage, product.hoverImage].filter(img => img); 
   const [currentIndex, setCurrentIndex] = useState(0);
   return (
-    <div className="container mx-auto px-6 py-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <button onClick={onBack} className="flex items-center gap-2 text-white/70 mb-8 font-bold hover:text-white transition cursor-pointer"><ArrowLeft className="w-5 h-5"/> Back to Shop</button>
-      <div className="flex flex-col md:flex-row gap-8 md:gap-16">
-        <div className="w-full md:w-1/2 relative group">
-          <div className="aspect-square bg-white/5 rounded-lg overflow-hidden border border-[#F2EFE4]/10 shadow-2xl relative">
-            <img src={images[currentIndex]} alt={product.name} className="w-full h-full object-cover transition-all duration-500" />
-            {images.length > 1 && (
-                <>
-                    <button onClick={() => setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)} className="absolute left-0 top-0 h-full w-1/4 flex items-center justify-start pl-4 text-white/10 hover:text-white hover:bg-black/5 transition-all z-20 cursor-pointer"><ChevronLeft className="w-12 h-12" /></button>
-                    <button onClick={() => setCurrentIndex((prev) => (prev + 1) % images.length)} className="absolute right-0 top-0 h-full w-1/4 flex items-center justify-end pr-4 text-white/10 hover:text-white hover:bg-black/5 transition-all z-20 cursor-pointer"><ChevronRight className="w-12 h-12" /></button>
-                </>
-            )}
-          </div>
+    <div className="container mx-auto px-6 py-12">
+      <button onClick={onBack} className="flex items-center gap-2 text-white/70 mb-8 font-bold"><ArrowLeft className="w-5 h-5"/> Back</button>
+      <div className="flex flex-col md:flex-row gap-8">
+        <div className="w-full md:w-1/2 aspect-square relative bg-white/5 rounded-lg overflow-hidden">
+            <img src={images[currentIndex]} className="w-full h-full object-cover" />
         </div>
-        <div className="w-full md:w-1/2 pt-4">
-          <span className="text-white/50 text-sm font-bold tracking-widest uppercase mb-2 block">{product.category}</span>
-          <h1 className="text-3xl md:text-4xl font-serif mb-4 uppercase font-bold tracking-widest">{product.name}</h1>
-          <p className="text-2xl font-light mb-8 opacity-90">{product.price}</p>
-          <div className="h-px w-full bg-white/20 mb-8"></div>
-          <ProductActionArea product={product} onAdd={onAdd} />
-          <div className="mt-8 space-y-4 text-sm opacity-80 border-t border-white/10 pt-8">
-            <div className="flex items-center gap-3"><Truck className="w-5 h-5"/> Delivery from 5-7 days</div>
-            <div className="flex items-center gap-3"><Check className="w-5 h-5"/> Material: {product.material || 'stainless steel'}</div>
-            <div className="flex items-center gap-3"><Lock className="w-5 h-5"/> Cash on delivery only</div>
-          </div>
+        <div className="w-full md:w-1/2">
+          <h1 className="text-3xl font-serif mb-4 uppercase font-bold">{product.name}</h1>
+          <p className="text-2xl mb-8">{product.price}</p>
+          <button onClick={() => onAdd(product)} className="w-full bg-[#F2EFE4] text-[#355E61] py-4 text-lg font-bold uppercase tracking-widest">Add to Cart</button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function ProductActionArea({ product, onAdd }: any) {
-  const [selectedSize, setSelectedSize] = useState(product.sizes.length > 0 ? product.sizes[0] : null);
-  return (
-    <div className="space-y-6">
-      {product.sizes.length > 0 && (
-        <div>
-          <label className="block text-sm font-bold mb-3 uppercase tracking-wider opacity-60">Select Size</label>
-          <div className="flex flex-wrap gap-3">
-            {product.sizes.map((size: string) => (
-              <button key={size} onClick={() => setSelectedSize(size)} className={`w-12 h-12 rounded-full border border-white/30 flex items-center justify-center transition-all cursor-pointer ${selectedSize === size ? 'bg-[#F2EFE4] text-[#355E61] font-bold border-[#F2EFE4]' : 'hover:border-white'}`}>{size}</button>
-            ))}
-          </div>
-        </div>
-      )}
-      <button onClick={() => onAdd({ ...product, selectedSize })} className="w-full bg-[#F2EFE4] text-[#355E61] py-4 text-lg font-bold uppercase tracking-widest hover:bg-white transition-all shadow-lg flex items-center justify-center gap-3 cursor-pointer"><ShoppingBag className="w-5 h-5"/> Add to Cart</button>
-    </div>
-  );
-}
-
-function CategoryPreview({ title, items, onViewAll, onProductClick, onAdd }: any) {
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
-        <h3 className="text-2xl font-serif pl-2 border-l-4 border-white/20 uppercase tracking-widest">{title}</h3>
-        <button onClick={onViewAll} className="text-xs text-white/50 font-bold uppercase hover:text-white transition cursor-pointer">View All</button>
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">{items.slice(0, 4).map((item: any) => <SmallCard key={item.id} item={item} onClick={() => onProductClick(item)} onAdd={onAdd} />)}</div>
-    </div>
-  );
-}
-
-function SectionView({ title, items, onBack, onProductClick, onAdd }: any) {
-  return (
-    <div className="container mx-auto px-6 py-12 min-h-[80vh]">
-      <div className="flex items-center gap-4 mb-8"><button onClick={onBack} className="p-2 hover:bg-white/10 rounded-full cursor-pointer"><ArrowLeft className="w-6 h-6" /></button><h2 className="text-3xl font-serif border-l-4 border-white/20 pl-4 uppercase tracking-widest">{title}</h2></div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">{items.map((item: any) => <SmallCard key={item.id} item={item} onClick={() => onProductClick(item)} onAdd={onAdd} />)}</div>
     </div>
   );
 }
