@@ -176,8 +176,11 @@ export default function Home() {
       {activeView === 'product_details' && selectedProduct && <ProductDetailView product={selectedProduct} onBack={() => navigateTo('shop')} onAdd={addToCart} />}
       {activeView === 'home' && (
         <>
-          <main className="container mx-auto px-6 py-20 text-center"><h1 className="text-5xl md:text-7xl font-serif mb-6 tracking-widest uppercase font-bold">Accera</h1><button onClick={() => navigateTo('shop')} className="bg-[#F2EFE4] text-[#355E61] px-10 py-3 font-semibold hover:bg-white transition uppercase tracking-widest cursor-pointer">SHOP COLLECTION</button></main>
-          <section className="container mx-auto px-6 py-12">
+          <main className="container mx-auto px-6 py-10 text-center">
+            <h1 className="text-5xl md:text-7xl font-serif mb-6 tracking-widest uppercase font-bold">Accera</h1>
+            <p className="text-sm md:text-base font-light italic opacity-70 mb-8 tracking-wide max-w-sm mx-auto"> "Elevate your everyday elegance." </p>
+            <button onClick={() => navigateTo('shop')} className="bg-[#F2EFE4] text-[#355E61] px-10 py-3 font-semibold hover:bg-white transition uppercase tracking-widest cursor-pointer">SHOP COLLECTION</button></main>
+          <section className="container mx-auto px-6 py-4">
               <h2 className="text-3xl font-serif text-center mb-10">Latest Drops</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {latestDrops.map((item) => <SmallCard key={item.id} item={item} onClick={() => openProductPage(item)} onAdd={addToCart} />)}
@@ -186,7 +189,7 @@ export default function Home() {
         </>
       )}
       {activeView === 'shop' && (
-        <div className="container mx-auto px-6 py-12 space-y-16">
+        <div className="container mx-auto px-6 py-12 space-y-6">
            {categories.map((category) => {
              const categoryItems = products.filter(p => p.category === category);
              if (categoryItems.length === 0) return null;
@@ -298,7 +301,7 @@ function ProductActionArea({ product, onAdd }: any) {
 function CategoryPreview({ title, items, onViewAll, onProductClick, onAdd }: any) {
   return (
     <div>
-      <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-2">
+      <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
         <h3 className="text-2xl font-serif pl-2 border-l-4 border-white/20 uppercase tracking-widest">{title}</h3>
         <button onClick={onViewAll} className="text-xs text-white/50 font-bold uppercase hover:text-white transition cursor-pointer">View All</button>
       </div>
