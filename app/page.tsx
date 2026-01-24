@@ -92,26 +92,25 @@ export default function Home() {
       {/* Menu Sidebar */}
       {isMenuOpen && <div className="fixed inset-0 bg-black/60 z-[60]" onClick={() => setIsMenuOpen(false)} />}
       <div className={`fixed top-0 left-0 h-full w-[85%] max-w-sm bg-[#2F4F4F] z-[70] transition-transform duration-300 flex flex-col ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="flex justify-between p-6 border-b border-white/10">
+        {/* Added shrink-0 to prevent header from collapsing */}
+        <div className="flex justify-between p-6 border-b border-white/10 shrink-0">
           <span className="text-xl font-serif text-[#F2EFE4]">MENU</span>
           <button onClick={() => setIsMenuOpen(false)} className="cursor-pointer text-[#F2EFE4]"><X className="w-8 h-8" /></button>
         </div>
-        <div className="px-8 pt-2 flex flex-col flex-1">
+        {/* Added overflow-y-auto to enable scrolling */}
+        <div className="px-8 pt-2 flex flex-col flex-1 overflow-y-auto">
             <button onClick={() => {setActiveView('home'); setIsMenuOpen(false);}} className="w-full text-left text-xl font-serif py-4 border-b border-white/10 cursor-pointer text-[#F2EFE4]">Home</button>
-<button 
-  onClick={() => {
-    setActiveView('shop'); // بيفتح سكشن الـ Shop
-    setSelectedCategoryName(''); // بيضمن إنه يعرض كل الأقسام مش قسم واحد
-    setIsMenuOpen(false); // بيقفل المنيو
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // بيطلعك فوق خالص
-  }} 
-  className="w-full text-left text-xl font-serif py-4 border-b border-white/20 mb-6 cursor-pointer text-[#F2EFE4]"
->
-  Shop All
-</button>            <div className="space-y-2">
-              {categories.map(cat => (
-                <button key={cat} onClick={() => openCategoryPage(cat)} className="w-full text-left text-lg opacity-80 py-2 hover:text-[#D4AF37] transition cursor-pointer text-[#F2EFE4]">
-                  {cat}s
+            <Link href="/shop" onClick={() => setIsMenuOpen(false)} className="w-full text-left text-xl font-serif py-4 border-b border-white/20 mb-6 cursor-pointer text-[#F2EFE4]">Shop All</Link>
+            <div className="space-y-2">
+              {/* الترتيب اليدوي اللي إنتي عايزاه */}
+              {['Ring', 'Bracelet', 'Necklace', 'Handchain', 'Cuff', 'Bangles'].map(cat => (
+                <button 
+                  key={cat} 
+                  onClick={() => { openCategoryPage(cat); setIsMenuOpen(false); }} 
+                  className="w-full text-left text-lg opacity-80 py-2 hover:text-[#D4AF37] transition cursor-pointer text-[#F2EFE4]"
+                >
+                  {/* بيعرض الاسم من الـ Array ويضيف s للجمع (ما عدا Bangles لأنها مجموعة جاهزة) */}
+                  {cat === 'Bangles' ? cat : `${cat}s`}
                 </button>
               ))}
             </div>
@@ -162,89 +161,89 @@ export default function Home() {
               <form onSubmit={placeOrder} className="space-y-4">
                 <h3 className="text-lg font-bold uppercase tracking-widest border-white/20 border-b pb-2 mb-4 text-[#F2EFE4]">Delivery Details</h3>
                 {/* Delivery Details Inputs */}
-<div className="grid grid-cols-2 gap-4">
-  <input
-    required
-    placeholder="First Name"
-    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-    value={checkoutForm.firstName}
-    onChange={(e:any) => setCheckoutForm({...checkoutForm, firstName: e.target.value})}
-  />
-  <input
-    required
-    placeholder="Second Name"
-    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-    value={checkoutForm.secondName}
-    onChange={(e:any) => setCheckoutForm({...checkoutForm, secondName: e.target.value})}
-  />
-</div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    required
+                    placeholder="First Name"
+                    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
+                    value={checkoutForm.firstName}
+                    onChange={(e:any) => setCheckoutForm({...checkoutForm, firstName: e.target.value})}
+                  />
+                  <input
+                    required
+                    placeholder="Second Name"
+                    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
+                    value={checkoutForm.secondName}
+                    onChange={(e:any) => setCheckoutForm({...checkoutForm, secondName: e.target.value})}
+                  />
+                </div>
 
-<div className="grid grid-cols-2 gap-4">
-  <input
-    required
-    placeholder="Phone"
-    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-    value={checkoutForm.phone}
-    onChange={(e:any) => setCheckoutForm({...checkoutForm, phone: e.target.value})}
-  />
-  <input
-    placeholder="Phone 2 (Optional)"
-    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-    value={checkoutForm.phone2}
-    onChange={(e:any) => setCheckoutForm({...checkoutForm, phone2: e.target.value})}
-  />
-</div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    required
+                    placeholder="Phone"
+                    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
+                    value={checkoutForm.phone}
+                    onChange={(e:any) => setCheckoutForm({...checkoutForm, phone: e.target.value})}
+                  />
+                  <input
+                    placeholder="Phone 2 (Optional)"
+                    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
+                    value={checkoutForm.phone2}
+                    onChange={(e:any) => setCheckoutForm({...checkoutForm, phone2: e.target.value})}
+                  />
+                </div>
 
-<input
-  required
-  placeholder="Full Address"
-  className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-  value={checkoutForm.fullAddress}
-  onChange={(e:any) => setCheckoutForm({...checkoutForm, fullAddress: e.target.value})}
-/>
+                <input
+                  required
+                  placeholder="Full Address"
+                  className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
+                  value={checkoutForm.fullAddress}
+                  onChange={(e:any) => setCheckoutForm({...checkoutForm, fullAddress: e.target.value})}
+                />
 
-<div className="grid grid-cols-3 gap-4">
-  <input
-    required
-    placeholder="Bldg #"
-    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-    value={checkoutForm.buildingNumber}
-    onChange={(e:any) => setCheckoutForm({...checkoutForm, buildingNumber: e.target.value})}
-  />
-  <input
-    required
-    placeholder="Floor"
-    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-    value={checkoutForm.floorNumber}
-    onChange={(e:any) => setCheckoutForm({...checkoutForm, floorNumber: e.target.value})}
-  />
-  <input
-    required
-    placeholder="Apt #"
-    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-    value={checkoutForm.apartmentNumber}
-    onChange={(e:any) => setCheckoutForm({...checkoutForm, apartmentNumber: e.target.value})}
-  />
-</div>
+                <div className="grid grid-cols-3 gap-4">
+                  <input
+                    required
+                    placeholder="Bldg #"
+                    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
+                    value={checkoutForm.buildingNumber}
+                    onChange={(e:any) => setCheckoutForm({...checkoutForm, buildingNumber: e.target.value})}
+                  />
+                  <input
+                    required
+                    placeholder="Floor"
+                    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
+                    value={checkoutForm.floorNumber}
+                    onChange={(e:any) => setCheckoutForm({...checkoutForm, floorNumber: e.target.value})}
+                  />
+                  <input
+                    required
+                    placeholder="Apt #"
+                    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
+                    value={checkoutForm.apartmentNumber}
+                    onChange={(e:any) => setCheckoutForm({...checkoutForm, apartmentNumber: e.target.value})}
+                  />
+                </div>
 
-<div className="grid grid-cols-2 gap-4">
-  <input
-    required
-    placeholder="City"
-    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-    value={checkoutForm.city}
-    onChange={(e:any) => setCheckoutForm({...checkoutForm, city: e.target.value})}
-  />
-  <select
-    className="w-full p-3 rounded-md bg-white text-black font-medium outline-none cursor-pointer"
-    value={checkoutForm.governorate}
-    onChange={(e) => setCheckoutForm({...checkoutForm, governorate: e.target.value})}
-  >
-    {Object.keys(SHIPPING_RATES).map((gov) => (
-      <option key={gov} value={gov}>{gov}</option>
-    ))}
-  </select>
-</div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    required
+                    placeholder="City"
+                    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
+                    value={checkoutForm.city}
+                    onChange={(e:any) => setCheckoutForm({...checkoutForm, city: e.target.value})}
+                  />
+                  <select
+                    className="w-full p-3 rounded-md bg-white text-black font-medium outline-none cursor-pointer"
+                    value={checkoutForm.governorate}
+                    onChange={(e) => setCheckoutForm({...checkoutForm, governorate: e.target.value})}
+                  >
+                    {Object.keys(SHIPPING_RATES).map((gov) => (
+                      <option key={gov} value={gov}>{gov}</option>
+                    ))}
+                  </select>
+                </div>
 
                 <button type="submit" className="w-full bg-[#F2EFE4] text-[#355E61] py-5 rounded-lg font-bold uppercase tracking-widest hover:bg-white transition-all cursor-pointer mt-4">Complete Order</button>
               </form>
