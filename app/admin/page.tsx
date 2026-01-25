@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Upload, Loader, Plus } from 'lucide-react';
-import { RefreshCw } from 'lucide-react';
+
 
 export default function AdminPage() {
   const [formData, setFormData] = useState({
@@ -63,7 +63,7 @@ export default function AdminPage() {
           <div>
             <label className="block text-sm font-bold mb-2">Category</label>
             <select className="w-full p-3 border rounded-lg outline-none focus:ring-2 focus:ring-[#355E61]/20 bg-white" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
-              <option>Necklace</option><option>Bangle</option><option>Ring</option><option>Bracelet</option><option>Handchain</option><option>Cuff</option>
+              <option>Necklace</option><option>Bangle</option><option>Ring</option><option>Earring</option><option>Bracelet</option><option>Handchain</option><option>Cuff</option>
             </select>
           </div>
           <div>

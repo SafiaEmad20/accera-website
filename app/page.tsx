@@ -128,7 +128,7 @@ export default function Home() {
 
   {/* Categories */}
   <div className="space-y-2">
-    {['Ring', 'Bracelet', 'Necklace', 'Handchain', 'Cuff', 'Bangles'].map(cat => (
+    {['Ring', 'Earring', 'Bracelet', 'Necklace', 'Handchain', 'Cuff', 'Bangles'].map(cat => (
       <button 
         key={cat}
         onClick={() => {
