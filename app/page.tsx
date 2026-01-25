@@ -93,57 +93,22 @@ export default function Home() {
       {/* Menu Sidebar */}
       {isMenuOpen && <div className="fixed inset-0 bg-black/60 z-[60]" onClick={() => setIsMenuOpen(false)} />}
       <div className={`fixed top-0 left-0 h-full w-[85%] max-w-sm bg-[#2F4F4F] z-[70] transition-transform duration-300 flex flex-col ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        {/* Added shrink-0 to prevent header from collapsing */}
         <div className="flex justify-between p-6 border-b border-white/10 shrink-0">
           <span className="text-xl font-serif text-[#F2EFE4]">MENU</span>
           <button onClick={() => setIsMenuOpen(false)} className="cursor-pointer text-[#F2EFE4]"><X className="w-8 h-8" /></button>
         </div>
         
-{/* Added overflow-y-auto to enable scrolling */}
-<div className="px-8 pt-2 flex flex-col flex-1 overflow-y-auto">
-
-  {/* Home */}
-  <button
-    onClick={() => {
-      setActiveView('home')
-      setIsMenuOpen(false)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }}
-    className="w-full text-left text-xl font-serif py-4 border-b border-white/10 cursor-pointer text-[#F2EFE4]"
-  >
-    Home
-  </button>
-
-  {/* Shop Collection */}
-  <button
-    onClick={() => {
-      setActiveView('shop')
-      setIsMenuOpen(false)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }}
-    className="w-full text-left text-xl font-serif py-4 border-b border-white/10 cursor-pointer text-[#F2EFE4]"
-  >
-    Shop Collection
-  </button>
-
-  {/* Categories */}
-  <div className="space-y-2">
-    {['Ring', 'Earring', 'Bracelet', 'Necklace', 'Handchain', 'Cuff', 'Bangles'].map(cat => (
-      <button 
-        key={cat}
-        onClick={() => {
-          openCategoryPage(cat)
-          setIsMenuOpen(false)
-        }}
-        className="w-full text-left text-lg opacity-80 py-2 hover:text-[#D4AF37] transition cursor-pointer text-[#F2EFE4]"
-      >
-        {cat === 'Bangles' ? cat : `${cat}s`}
-      </button>
-    ))}
-
-</div>
-
-            <div className="mt-auto border-t border-white/10 pt-8 pb-4">
+        <div className="px-8 pt-2 flex flex-col flex-1 overflow-y-auto">
+          <button onClick={() => { setActiveView('home'); setIsMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="w-full text-left text-xl font-serif py-4 border-b border-white/10 cursor-pointer text-[#F2EFE4]">Home</button>
+          <button onClick={() => { setActiveView('shop'); setIsMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="w-full text-left text-xl font-serif py-4 border-b border-white/10 cursor-pointer text-[#F2EFE4]">Shop Collection</button>
+          <div className="space-y-2">
+            {['Ring', 'Earring', 'Bracelet', 'Necklace', 'Handchain', 'Cuff', 'Bangles'].map(cat => (
+              <button key={cat} onClick={() => { openCategoryPage(cat); setIsMenuOpen(false); }} className="w-full text-left text-lg opacity-80 py-2 hover:text-[#D4AF37] transition cursor-pointer text-[#F2EFE4]">
+                {cat === 'Bangles' ? cat : `${cat}s`}
+              </button>
+            ))}
+          </div>
+          <div className="mt-auto border-t border-white/10 pt-8 pb-4">
               <h4 className="text-xs font-bold uppercase tracking-[0.2em] mb-6 opacity-40 text-[#F2EFE4]">Contact Us</h4>
               <div className="flex flex-col gap-6">
                 <a href="https://www.instagram.com/accera.eg" target="_blank" rel="noreferrer" className="flex items-center gap-4 hover:opacity-100 opacity-80 transition cursor-pointer text-[#F2EFE4]">
@@ -167,7 +132,12 @@ export default function Home() {
           {cart.map((item, index) => (
             <div key={index} className="flex gap-4 items-center bg-white p-3 rounded-lg shadow-sm">
               <img src={item.mainImage} className="w-16 h-20 object-cover rounded-sm" />
-              <div className="flex-1"><h4 className="font-bold text-sm">{item.name}</h4>{item.selectedSize && <p className="text-xs text-gray-500">Size: {item.selectedSize}</p>}<p className="font-bold text-sm opacity-70">{item.price}</p></div>
+              <div className="flex-1">
+                <h4 className="font-bold text-sm">{item.name}</h4>
+                {item.selectedSize && <p className="text-xs text-gray-500">Size: {item.selectedSize}</p>}
+                {item.selectedColor && <p className="text-xs text-gray-500">Color: {item.selectedColor}</p>}
+                <p className="font-bold text-sm opacity-70">{item.price}</p>
+              </div>
               <button onClick={() => removeFromCart(index)} className="text-red-400 cursor-pointer"><Trash2 className="w-5 h-5" /></button>
             </div>
           ))}
@@ -189,100 +159,44 @@ export default function Home() {
               </div>
               <form onSubmit={placeOrder} className="space-y-4">
                 <h3 className="text-lg font-bold uppercase tracking-widest border-white/20 border-b pb-2 mb-4 text-[#F2EFE4]">Delivery Details</h3>
-                {/* Delivery Details Inputs */}
                 <div className="grid grid-cols-2 gap-4">
-                  <input
-                    required
-                    placeholder="First Name"
-                    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-                    value={checkoutForm.firstName}
-                    onChange={(e:any) => setCheckoutForm({...checkoutForm, firstName: e.target.value})}
-                  />
-                  <input
-                    required
-                    placeholder="Second Name"
-                    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-                    value={checkoutForm.secondName}
-                    onChange={(e:any) => setCheckoutForm({...checkoutForm, secondName: e.target.value})}
-                  />
+                  <input required placeholder="First Name" className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none" value={checkoutForm.firstName} onChange={(e:any) => setCheckoutForm({...checkoutForm, firstName: e.target.value})} />
+                  <input required placeholder="Second Name" className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none" value={checkoutForm.secondName} onChange={(e:any) => setCheckoutForm({...checkoutForm, secondName: e.target.value})} />
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
-                  <input
-                    required
-                    placeholder="Phone"
-                    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-                    value={checkoutForm.phone}
-                    onChange={(e:any) => setCheckoutForm({...checkoutForm, phone: e.target.value})}
-                  />
-                  <input
-                    placeholder="Phone 2 (Optional)"
-                    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-                    value={checkoutForm.phone2}
-                    onChange={(e:any) => setCheckoutForm({...checkoutForm, phone2: e.target.value})}
-                  />
+                  <input required placeholder="Phone" className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none" value={checkoutForm.phone} onChange={(e:any) => setCheckoutForm({...checkoutForm, phone: e.target.value})} />
+                  <input placeholder="Phone 2 (Optional)" className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none" value={checkoutForm.phone2} onChange={(e:any) => setCheckoutForm({...checkoutForm, phone2: e.target.value})} />
                 </div>
-
-                <input
-                  required
-                  placeholder="Full Address"
-                  className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-                  value={checkoutForm.fullAddress}
-                  onChange={(e:any) => setCheckoutForm({...checkoutForm, fullAddress: e.target.value})}
-                />
-
+                <input required placeholder="Full Address" className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none" value={checkoutForm.fullAddress} onChange={(e:any) => setCheckoutForm({...checkoutForm, fullAddress: e.target.value})} />
                 <div className="grid grid-cols-3 gap-4">
-                  <input
-                    required
-                    placeholder="Bldg #"
-                    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-                    value={checkoutForm.buildingNumber}
-                    onChange={(e:any) => setCheckoutForm({...checkoutForm, buildingNumber: e.target.value})}
-                  />
-                  <input
-                    required
-                    placeholder="Floor"
-                    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-                    value={checkoutForm.floorNumber}
-                    onChange={(e:any) => setCheckoutForm({...checkoutForm, floorNumber: e.target.value})}
-                  />
-                  <input
-                    required
-                    placeholder="Apt #"
-                    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-                    value={checkoutForm.apartmentNumber}
-                    onChange={(e:any) => setCheckoutForm({...checkoutForm, apartmentNumber: e.target.value})}
-                  />
+                  <input required placeholder="Bldg #" className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none" value={checkoutForm.buildingNumber} onChange={(e:any) => setCheckoutForm({...checkoutForm, buildingNumber: e.target.value})} />
+                  <input required placeholder="Floor" className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none" value={checkoutForm.floorNumber} onChange={(e:any) => setCheckoutForm({...checkoutForm, floorNumber: e.target.value})} />
+                  <input required placeholder="Apt #" className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none" value={checkoutForm.apartmentNumber} onChange={(e:any) => setCheckoutForm({...checkoutForm, apartmentNumber: e.target.value})} />
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
-                  <input
-                    required
-                    placeholder="City"
-                    className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none"
-                    value={checkoutForm.city}
-                    onChange={(e:any) => setCheckoutForm({...checkoutForm, city: e.target.value})}
-                  />
-                  <select
-                    className="w-full p-3 rounded-md bg-white text-black font-medium outline-none cursor-pointer"
-                    value={checkoutForm.governorate}
-                    onChange={(e) => setCheckoutForm({...checkoutForm, governorate: e.target.value})}
-                  >
-                    {Object.keys(SHIPPING_RATES).map((gov) => (
-                      <option key={gov} value={gov}>{gov}</option>
-                    ))}
+                  <input required placeholder="City" className="w-full p-3 rounded-md bg-white text-black placeholder:text-gray-600 font-medium outline-none" value={checkoutForm.city} onChange={(e:any) => setCheckoutForm({...checkoutForm, city: e.target.value})} />
+                  <select className="w-full p-3 rounded-md bg-white text-black font-medium outline-none cursor-pointer" value={checkoutForm.governorate} onChange={(e) => setCheckoutForm({...checkoutForm, governorate: e.target.value})}>
+                    {Object.keys(SHIPPING_RATES).map((gov) => <option key={gov} value={gov}>{gov}</option>)}
                   </select>
                 </div>
-
                 <button type="submit" className="w-full bg-[#F2EFE4] text-[#355E61] py-5 rounded-lg font-bold uppercase tracking-widest hover:bg-white transition-all cursor-pointer mt-4">Complete Order</button>
               </form>
             </div>
             <div className="w-full md:w-[40%] bg-black/10 p-8 md:p-12">
               <h3 className="text-lg font-bold mb-8 opacity-50 uppercase tracking-widest text-[#F2EFE4]">Order Summary</h3>
-              <div className="space-y-6">{cart.map((item, i) => <div key={i} className="flex justify-between font-medium text-[#F2EFE4]"><span>{item.name}</span><span>{item.price}</span></div>)}</div>
+              <div className="space-y-6">
+                {cart.map((item, i) => (
+                  <div key={i} className="flex justify-between font-medium text-[#F2EFE4]">
+                    <div>
+                      <span>{item.name}</span>
+                      {item.selectedColor && <span className="block text-xs opacity-60">Color: {item.selectedColor}</span>}
+                    </div>
+                    <span>{item.price}</span>
+                  </div>
+                ))}
+              </div>
               <div className="border-t border-white/10 mt-8 pt-8 space-y-4">
                 <div className="flex justify-between opacity-60 font-bold uppercase text-xs tracking-widest text-[#F2EFE4]"><span>Shipping</span><span>{SHIPPING_RATES[checkoutForm.governorate]} EGP</span></div>
-                {/* الـ Total باللون الأبيض الصريح */}
                 <div className="flex justify-between font-bold text-2xl text-white tracking-tight"><span>Total</span><span>{calculateTotal()} EGP</span></div>
               </div>
             </div>
@@ -310,51 +224,41 @@ export default function Home() {
       )}
 
       {activeView === 'shop' && (
-  <div className="container mx-auto px-6 py-8"> {/* قللنا المسافة الرأسية شوية */}
-     
-     {/* 1. ضفنا الهيدر (العنوان وزرار الرجوع) عشان تبقى زي صفحة Shop Collection */}
-     <div className="flex items-center gap-4 mb-8">
-        <button onClick={() => setActiveView('home')} className="p-2 hover:bg-white/10 rounded-full cursor-pointer text-[#F2EFE4]">
-          <ArrowLeft className="w-6 h-6" />
-        </button>
-        <h1 className="text-3xl font-serif border-l-4 border-white/20 pl-4 uppercase tracking-widest text-[#F2EFE4]">Shop All</h1>
-     </div>
-
-     <div className="space-y-12">
-       {/* 2. هنا التعديل المهم: حطينا الترتيب اليدوي اللي انتي عايزاه بالظبط */}
-       {['Ring', 'Earring','Bracelet', 'Necklace', 'Handchain', 'Cuff', 'Bangles'].map((category) => {
-         
-         const categoryItems = products.filter(p => p.category === category);
-         
-         // لو القسم فاضي ما تعرضيهوش
-         if (categoryItems.length === 0) return null;
-         
-         return (
-           <CategoryPreview 
-             key={category} 
-             // تظبيط الاسم: Bangles زي ما هي والباقي ياخد s
-             title={category === 'Bangles' ? category : `${category}s`} 
-             items={categoryItems} 
-             onViewAll={() => openCategoryPage(category)} 
-             onProductClick={openProductPage} 
-             onAdd={addToCart} 
-           />
-         );
-       })}
-     </div>
-  </div>
-)}
+        <div className="container mx-auto px-6 py-8">
+           <div className="flex items-center gap-4 mb-8">
+              <button onClick={() => setActiveView('home')} className="p-2 hover:bg-white/10 rounded-full cursor-pointer text-[#F2EFE4]">
+                <ArrowLeft className="w-6 h-6" />
+              </button>
+              <h1 className="text-3xl font-serif border-l-4 border-white/20 pl-4 uppercase tracking-widest text-[#F2EFE4]">Shop All</h1>
+           </div>
+           <div className="space-y-12">
+             {['Ring', 'Earring', 'Bracelet', 'Necklace', 'Handchain', 'Cuff', 'Bangles'].map((category) => {
+               const categoryItems = products.filter(p => p.category === category);
+               if (categoryItems.length === 0) return null;
+               return (
+                 <CategoryPreview 
+                   key={category} 
+                   title={category === 'Bangles' ? category : `${category}s`} 
+                   items={categoryItems} 
+                   onViewAll={() => openCategoryPage(category)} 
+                   onProductClick={openProductPage} 
+                   onAdd={addToCart} 
+                 />
+               );
+             })}
+           </div>
+        </div>
+      )}
 
       {activeView === 'category_view' && (
-  <SectionView
-    title={`${selectedCategoryName}s`}
-    items={products.filter(p => p.category === selectedCategoryName)}
-    onBack={() => setActiveView('shop')}
-    onProductClick={openProductPage}
-    onAdd={addToCart}
-  />
-)}
-
+        <SectionView
+          title={`${selectedCategoryName}s`}
+          items={products.filter(p => p.category === selectedCategoryName)}
+          onBack={() => setActiveView('shop')}
+          onProductClick={openProductPage}
+          onAdd={addToCart}
+        />
+      )}
 
       {activeView === 'product_details' && selectedProduct && (
         <ProductDetailView product={selectedProduct} onBack={() => setActiveView('home')} onAdd={addToCart} />
@@ -394,12 +298,21 @@ function SectionView({ title, items, onBack, onProductClick, onAdd }: any) {
 
 function SmallCard({ item, onClick, onAdd }: any) {
   const [isHovered, setIsHovered] = useState(false);
+  const isOutOfStock = item.stock === 0;
+
   return (
     <div className="group w-full relative" onClick={onClick} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       <div className="aspect-[3/4] bg-white/5 relative overflow-hidden rounded-sm border border-white/10 cursor-pointer shadow-lg">
-          <img src={item.mainImage} className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${isHovered && item.hoverImage ? 'opacity-0' : 'opacity-100'}`} />
-          {item.hoverImage && <img src={item.hoverImage} className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${isHovered ? 'opacity-100' : 'opacity-0'}`} />}
-          <button onClick={(e) => { e.stopPropagation(); onAdd({...item, selectedSize: item.sizes?.[0] || null}); }} className="absolute bottom-0 w-full bg-[#355E61] text-[#F2EFE4] text-xs font-bold uppercase py-3 translate-y-full group-hover:translate-y-0 transition duration-300 z-10 cursor-pointer">Quick Add</button>
+          <img src={item.mainImage} className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${isHovered && item.hoverImage ? 'opacity-0' : 'opacity-100'} ${isOutOfStock ? 'opacity-50 grayscale' : ''}`} />
+          {item.hoverImage && !isOutOfStock && <img src={item.hoverImage} className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${isHovered ? 'opacity-100' : 'opacity-0'}`} />}
+          
+          {isOutOfStock ? (
+             <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-20">
+                <span className="text-white font-bold uppercase tracking-widest border border-white px-4 py-2">Sold Out</span>
+             </div>
+          ) : (
+             <button onClick={(e) => { e.stopPropagation(); onAdd({...item, selectedSize: item.sizes?.[0] || null}); }} className="absolute bottom-0 w-full bg-[#355E61] text-[#F2EFE4] text-xs font-bold uppercase py-3 translate-y-full group-hover:translate-y-0 transition duration-300 z-10 cursor-pointer">Quick Add</button>
+          )}
       </div>
       <div className="mt-3 text-center">
           <h3 className="text-sm font-serif truncate uppercase tracking-widest opacity-80 text-[#F2EFE4]">{item.name}</h3>
@@ -409,65 +322,71 @@ function SmallCard({ item, onClick, onAdd }: any) {
   );
 }
 
+// ============================================
+// 👇 التعديلات الرئيسية هنا (ProductDetailView)
+// ============================================
 function ProductDetailView({ product, onBack, onAdd }: any) {
-  // تجميع الصور (الأساسية + الهوفر)
-  const images = [product.mainImage, product.hoverImage].filter(img => img); 
+  // 1. بنشوف لو المنتج فيه Variants (نظام الصور الجديد)
+  const hasVariants = product.variants && product.variants.length > 0;
+  
+  // 2. بنحدد اللون الافتراضي (أول لون في Variants أو أول لون في colors القديم)
+  const defaultColor = hasVariants 
+        ? product.variants[0].color 
+        : (product.colors ? product.colors.split(',')[0] : null);
+
+  const [selectedColor, setSelectedColor] = useState(defaultColor);
+  
+  // 3. بنحدد الصور اللي هتظهر
+  // لو فيه Variants واللون المختار موجود -> هات صوره
+  // لو مفيش -> هات الصور الأساسية بتاعة المنتج
+  const currentVariant = hasVariants ? product.variants.find((v: any) => v.color === selectedColor) : null;
+  const displayMainImage = currentVariant ? currentVariant.mainImage : product.mainImage;
+  const displayHoverImage = currentVariant ? currentVariant.hoverImage : product.hoverImage;
+
+  const images = [displayMainImage, displayHoverImage].filter(img => img); 
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // لما اللون يتغير، ارجع للصورة الأولى
+  useEffect(() => { setCurrentIndex(0); }, [selectedColor]);
 
   return (
     <div className="container mx-auto px-6 py-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      
-      {/* زرار الرجوع */}
       <button onClick={onBack} className="flex items-center gap-2 text-[#F2EFE4]/70 mb-8 font-bold hover:text-white transition cursor-pointer">
         <ArrowLeft className="w-5 h-5"/> Back
       </button>
-
       <div className="flex flex-col md:flex-row gap-8 md:gap-16">
         
-        {/* --- قسم الصور (التعديل هنا) --- */}
+        {/* معرض الصور */}
         <div className="w-full md:w-1/2 relative group">
           <div className="aspect-[3/4] bg-white/5 rounded-lg overflow-hidden border border-[#F2EFE4]/10 shadow-2xl relative select-none">
-            
-            {/* الصورة الحالية */}
             <img src={images[currentIndex]} className="w-full h-full object-cover transition-all duration-500" />
             
-            {/* أزرار التنقل (بتظهر بس لو فيه أكتر من صورة) */}
             {images.length > 1 && (
                 <>
-                    {/* زرار الشمال: دائرة شفافة ظاهرة علطول */}
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); setCurrentIndex((prev) => (prev - 1 + images.length) % images.length); }} 
-                      className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/30 text-white flex items-center justify-center backdrop-blur-md hover:bg-black/50 transition-all z-20 cursor-pointer active:scale-95"
-                    >
-                      <ChevronLeft className="w-6 h-6" />
-                    </button>
-                    
-                    {/* زرار اليمين: دائرة شفافة ظاهرة علطول */}
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); setCurrentIndex((prev) => (prev + 1) % images.length); }} 
-                      className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/30 text-white flex items-center justify-center backdrop-blur-md hover:bg-black/50 transition-all z-20 cursor-pointer active:scale-95"
-                    >
-                      <ChevronRight className="w-6 h-6" />
-                    </button>
-
-                    {/* (إضافة) نقط صغيرة تحت توضح رقم الصورة */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-                      {images.map((_, idx) => (
-                        <div key={idx} className={`h-1.5 rounded-full transition-all duration-300 shadow-sm ${idx === currentIndex ? 'bg-white w-6' : 'bg-white/50 w-1.5'}`} />
-                      ))}
-                    </div>
+                    <button onClick={(e) => { e.stopPropagation(); setCurrentIndex((prev) => (prev - 1 + images.length) % images.length); }} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/30 text-white flex items-center justify-center backdrop-blur-md hover:bg-black/50 transition-all z-20 cursor-pointer active:scale-95"><ChevronLeft className="w-6 h-6" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); setCurrentIndex((prev) => (prev + 1) % images.length); }} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/30 text-white flex items-center justify-center backdrop-blur-md hover:bg-black/50 transition-all z-20 cursor-pointer active:scale-95"><ChevronRight className="w-6 h-6" /></button>
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">{images.map((_, idx) => (<div key={idx} className={`h-1.5 rounded-full transition-all duration-300 shadow-sm ${idx === currentIndex ? 'bg-white w-6' : 'bg-white/50 w-1.5'}`} />))}</div>
                 </>
             )}
           </div>
         </div>
 
-        {/* --- تفاصيل المنتج (زي ما هي) --- */}
+        {/* تفاصيل المنتج */}
         <div className="w-full md:w-1/2 pt-4">
           <h1 className="text-3xl md:text-4xl font-serif mb-4 uppercase font-bold tracking-widest text-[#F2EFE4]">{product.name}</h1>
           <p className="text-2xl font-light mb-8 opacity-90 text-[#F2EFE4]">{product.price}</p>
           <div className="h-px w-full bg-white/20 mb-8"></div>
           
-          <ProductActionArea product={product} onAdd={onAdd} />
+          {/* هنا بنبعت الـ State والـ Setter لتحت عشان يغيروا الصور فوق */}
+          <ProductActionArea 
+             product={product} 
+             selectedColor={selectedColor}
+             setSelectedColor={setSelectedColor}
+             onAdd={(item: any) => {
+                 // 4. أهم نقطة: بنبعت للسلة المنتج بالصورة اللي ظاهرة دلوقتي
+                 onAdd({ ...item, mainImage: displayMainImage, selectedColor });
+             }}
+          />
           
           <div className="mt-8 space-y-4 text-sm opacity-80 border-t border-white/10 pt-8 text-[#F2EFE4]">
             <div className="flex items-center gap-3"><Truck className="w-5 h-5"/> Delivery from 5-7 days</div>
@@ -480,22 +399,63 @@ function ProductDetailView({ product, onBack, onAdd }: any) {
   );
 }
 
-// دي زي ما هي مفيش فيها تغيير
-function ProductActionArea({ product, onAdd }: any) {
-  const [selectedSize, setSelectedSize] = useState(product.sizes.length > 0 ? product.sizes[0] : null);
+// ============================================
+// 👇 تعديل ProductActionArea عشان يقبل تغيير الألوان
+// ============================================
+function ProductActionArea({ product, onAdd, selectedColor, setSelectedColor }: any) {
+  const [selectedSize, setSelectedSize] = useState(product.sizes?.length > 0 ? product.sizes[0] : null);
+  const isOutOfStock = product.stock === 0;
+
+  // بنجيب الألوان المتاحة (سواء من variants الجداد أو colors القديمة)
+  const availableColors = product.variants && product.variants.length > 0 
+      ? product.variants.map((v: any) => v.color) 
+      : (product.colors ? product.colors.split(',') : []);
+
   return (
     <div className="space-y-6">
-      {product.sizes.length > 0 && (
+      
+      {availableColors.length > 0 && (
+        <div>
+           <label className="block text-sm font-bold mb-3 uppercase tracking-wider opacity-60 text-[#F2EFE4]">Select Color</label>
+           <div className="flex gap-4">
+             {availableColors.map((color: string) => (
+                <button 
+                  key={color}
+                  // لما يدوس، بيغير الـ State اللي في الـ Parent، فالصور فوق تتغير
+                  onClick={() => !isOutOfStock && setSelectedColor && setSelectedColor(color)}
+                  className={`
+                    px-6 py-2 rounded-full border transition-all uppercase font-bold text-sm cursor-pointer
+                    ${selectedColor === color 
+                        ? (color === 'Gold' ? 'bg-[#D4AF37] text-white border-[#D4AF37]' : 'bg-gray-300 text-gray-800 border-gray-300') 
+                        : 'border-white/30 text-[#F2EFE4] hover:border-white'
+                    }
+                  `}
+                >
+                  {color}
+                </button>
+             ))}
+           </div>
+        </div>
+      )}
+
+      {product.sizes?.length > 0 && (
         <div>
           <label className="block text-sm font-bold mb-3 uppercase tracking-wider opacity-60 text-[#F2EFE4]">Select Size</label>
           <div className="flex flex-wrap gap-3">
             {product.sizes.map((size: string) => (
-              <button key={size} onClick={() => setSelectedSize(size)} className={`w-12 h-12 rounded-full border border-white/30 flex items-center justify-center transition-all cursor-pointer ${selectedSize === size ? 'bg-[#F2EFE4] text-[#355E61] font-bold border-[#F2EFE4]' : 'hover:border-white text-[#F2EFE4]'}`}>{size}</button>
+              <button key={size} onClick={() => !isOutOfStock && setSelectedSize(size)} className={`w-12 h-12 rounded-full border border-white/30 flex items-center justify-center transition-all cursor-pointer ${selectedSize === size ? 'bg-[#F2EFE4] text-[#355E61] font-bold border-[#F2EFE4]' : 'hover:border-white text-[#F2EFE4]'} ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}`}>{size}</button>
             ))}
           </div>
         </div>
       )}
-      <button onClick={() => onAdd({ ...product, selectedSize })} className="w-full bg-[#F2EFE4] text-[#355E61] py-4 text-lg font-bold uppercase tracking-widest hover:bg-white transition-all shadow-lg flex items-center justify-center gap-3 cursor-pointer"><ShoppingBag className="w-5 h-5"/> Add to Cart</button>
+      
+      <button 
+          onClick={() => !isOutOfStock && onAdd({ ...product, selectedSize, selectedColor })} 
+          disabled={isOutOfStock}
+          className={`w-full py-4 text-lg font-bold uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-3 ${isOutOfStock ? 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-70' : 'bg-[#F2EFE4] text-[#355E61] hover:bg-white cursor-pointer'}`}
+      >
+        {isOutOfStock ? 'Out of Stock' : <><ShoppingBag className="w-5 h-5"/> Add to Cart</>}
+      </button>
     </div>
   );
 }
