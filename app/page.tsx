@@ -410,28 +410,65 @@ function SmallCard({ item, onClick, onAdd }: any) {
 }
 
 function ProductDetailView({ product, onBack, onAdd }: any) {
+  // تجميع الصور (الأساسية + الهوفر)
   const images = [product.mainImage, product.hoverImage].filter(img => img); 
   const [currentIndex, setCurrentIndex] = useState(0);
+
   return (
     <div className="container mx-auto px-6 py-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <button onClick={onBack} className="flex items-center gap-2 text-[#F2EFE4]/70 mb-8 font-bold hover:text-white transition cursor-pointer"><ArrowLeft className="w-5 h-5"/> Back</button>
+      
+      {/* زرار الرجوع */}
+      <button onClick={onBack} className="flex items-center gap-2 text-[#F2EFE4]/70 mb-8 font-bold hover:text-white transition cursor-pointer">
+        <ArrowLeft className="w-5 h-5"/> Back
+      </button>
+
       <div className="flex flex-col md:flex-row gap-8 md:gap-16">
+        
+        {/* --- قسم الصور (التعديل هنا) --- */}
         <div className="w-full md:w-1/2 relative group">
-          <div className="aspect-[3/4] bg-white/5 rounded-lg overflow-hidden border border-[#F2EFE4]/10 shadow-2xl relative">
+          <div className="aspect-[3/4] bg-white/5 rounded-lg overflow-hidden border border-[#F2EFE4]/10 shadow-2xl relative select-none">
+            
+            {/* الصورة الحالية */}
             <img src={images[currentIndex]} className="w-full h-full object-cover transition-all duration-500" />
+            
+            {/* أزرار التنقل (بتظهر بس لو فيه أكتر من صورة) */}
             {images.length > 1 && (
                 <>
-                    <button onClick={() => setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)} className="absolute left-0 top-0 h-full w-1/4 flex items-center justify-start pl-4 text-white/10 hover:text-white hover:bg-black/5 transition-all z-20 cursor-pointer"><ChevronLeft className="w-12 h-12" /></button>
-                    <button onClick={() => setCurrentIndex((prev) => (prev + 1) % images.length)} className="absolute right-0 top-0 h-full w-1/4 flex items-center justify-end pr-4 text-white/10 hover:text-white hover:bg-black/5 transition-all z-20 cursor-pointer"><ChevronRight className="w-12 h-12" /></button>
+                    {/* زرار الشمال: دائرة شفافة ظاهرة علطول */}
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setCurrentIndex((prev) => (prev - 1 + images.length) % images.length); }} 
+                      className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/30 text-white flex items-center justify-center backdrop-blur-md hover:bg-black/50 transition-all z-20 cursor-pointer active:scale-95"
+                    >
+                      <ChevronLeft className="w-6 h-6" />
+                    </button>
+                    
+                    {/* زرار اليمين: دائرة شفافة ظاهرة علطول */}
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setCurrentIndex((prev) => (prev + 1) % images.length); }} 
+                      className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/30 text-white flex items-center justify-center backdrop-blur-md hover:bg-black/50 transition-all z-20 cursor-pointer active:scale-95"
+                    >
+                      <ChevronRight className="w-6 h-6" />
+                    </button>
+
+                    {/* (إضافة) نقط صغيرة تحت توضح رقم الصورة */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+                      {images.map((_, idx) => (
+                        <div key={idx} className={`h-1.5 rounded-full transition-all duration-300 shadow-sm ${idx === currentIndex ? 'bg-white w-6' : 'bg-white/50 w-1.5'}`} />
+                      ))}
+                    </div>
                 </>
             )}
           </div>
         </div>
+
+        {/* --- تفاصيل المنتج (زي ما هي) --- */}
         <div className="w-full md:w-1/2 pt-4">
           <h1 className="text-3xl md:text-4xl font-serif mb-4 uppercase font-bold tracking-widest text-[#F2EFE4]">{product.name}</h1>
           <p className="text-2xl font-light mb-8 opacity-90 text-[#F2EFE4]">{product.price}</p>
           <div className="h-px w-full bg-white/20 mb-8"></div>
+          
           <ProductActionArea product={product} onAdd={onAdd} />
+          
           <div className="mt-8 space-y-4 text-sm opacity-80 border-t border-white/10 pt-8 text-[#F2EFE4]">
             <div className="flex items-center gap-3"><Truck className="w-5 h-5"/> Delivery from 5-7 days</div>
             <div className="flex items-center gap-3"><Check className="w-5 h-5"/> Material: {product.material || 'stainless steel'}</div>
@@ -443,6 +480,7 @@ function ProductDetailView({ product, onBack, onAdd }: any) {
   );
 }
 
+// دي زي ما هي مفيش فيها تغيير
 function ProductActionArea({ product, onAdd }: any) {
   const [selectedSize, setSelectedSize] = useState(product.sizes.length > 0 ? product.sizes[0] : null);
   return (

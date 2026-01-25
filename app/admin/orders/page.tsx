@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { ChevronDown, ChevronUp, Package, Phone, MapPin, CheckCircle, Clock, Truck } from 'lucide-react';
+// ضفنا RefreshCw هنا
+import { ChevronDown, ChevronUp, Package, Phone, MapPin, CheckCircle, Clock, Truck, RefreshCw } from 'lucide-react';
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -19,7 +20,9 @@ export default function AdminOrders() {
 
     if (error) console.error('Error:', error);
     else setOrders(data || []);
-    setLoading(false);
+    
+    // Timeout صغير عشان تلحقي تشوفي اللفة 😉
+    setTimeout(() => setLoading(false), 500);
   };
 
   useEffect(() => {
@@ -48,21 +51,39 @@ export default function AdminOrders() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-[#355E61] flex items-center gap-2">
-            <Package className="w-8 h-8"/> Orders Dashboard
-          </h1>
-          <button onClick={fetchOrders} className="text-sm bg-white border px-4 py-2 rounded shadow hover:bg-gray-100">
-            Refresh Data 🔄
+        
+        {/* --- Header الصفحة الجديد (الأيقونة اللي بتلف) --- */}
+        <div className="flex justify-between items-end mb-8 border-b border-gray-200 pb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-[#355E61] flex items-center gap-2">
+              <Package className="w-8 h-8"/> Orders Dashboard
+            </h1>
+            <p className="text-sm text-gray-400 mt-1 ml-10">Manage and track customer orders</p>
+          </div>
+          
+          <button 
+            onClick={fetchOrders} 
+            disabled={loading}
+            className="p-3 bg-white text-[#355E61] rounded-full shadow-sm hover:shadow-md hover:bg-[#355E61] hover:text-white transition-all border border-gray-200 group cursor-pointer"
+            title="Refresh Data"
+          >
+            {/* اللوجيك: لو بيحمل تلف، لو لأ وتعملي هوفر تلف نص لفة */}
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
           </button>
         </div>
 
-        {loading ? (
-          <p className="text-center text-gray-500">Loading orders...</p>
+        {loading && orders.length === 0 ? (
+          <div className="text-center py-20">
+             <RefreshCw className="w-10 h-10 mx-auto text-gray-300 animate-spin mb-4"/>
+             <p className="text-gray-500">Loading orders...</p>
+          </div>
         ) : orders.length === 0 ? (
-          <p className="text-center text-gray-500">No orders yet.</p>
+          <div className="text-center py-20 opacity-60">
+             <Package className="w-16 h-16 mx-auto mb-4 text-gray-300"/>
+             <p className="text-xl font-serif text-gray-500">No orders yet.</p>
+          </div>
         ) : (
           <div className="space-y-4">
             {orders.map((order) => (
@@ -75,7 +96,7 @@ export default function AdminOrders() {
                 >
                   <div className="flex items-center gap-4 mb-4 md:mb-0">
                     <div className={`p-3 rounded-full ${order.status === 'New' ? 'bg-blue-100 text-blue-600' : order.status === 'Shipped' ? 'bg-yellow-100 text-yellow-600' : 'bg-green-100 text-green-600'}`}>
-                       {order.status === 'New' ? <Clock className="w-6 h-6"/> : order.status === 'Shipped' ? <Truck className="w-6 h-6"/> : <CheckCircle className="w-6 h-6"/>}
+                        {order.status === 'New' ? <Clock className="w-6 h-6"/> : order.status === 'Shipped' ? <Truck className="w-6 h-6"/> : <CheckCircle className="w-6 h-6"/>}
                     </div>
                     <div>
                       <h3 className="font-bold text-lg text-gray-800">Order #{order.id}</h3>
@@ -110,9 +131,9 @@ export default function AdminOrders() {
                         <div className="mt-4">
                             <h4 className="font-bold text-gray-700 mb-2">Change Status:</h4>
                             <div className="flex gap-2">
-                                <button onClick={() => updateStatus(order.id, 'New')} className={`px-3 py-1 text-xs rounded border ${order.status === 'New' ? 'bg-blue-600 text-white' : 'bg-white hover:bg-gray-100'}`}>New</button>
-                                <button onClick={() => updateStatus(order.id, 'Shipped')} className={`px-3 py-1 text-xs rounded border ${order.status === 'Shipped' ? 'bg-yellow-500 text-white' : 'bg-white hover:bg-gray-100'}`}>Shipped</button>
-                                <button onClick={() => updateStatus(order.id, 'Delivered')} className={`px-3 py-1 text-xs rounded border ${order.status === 'Delivered' ? 'bg-green-600 text-white' : 'bg-white hover:bg-gray-100'}`}>Delivered</button>
+                                <button onClick={() => updateStatus(order.id, 'New')} className={`px-3 py-1 text-xs rounded border cursor-pointer ${order.status === 'New' ? 'bg-blue-600 text-white' : 'bg-white hover:bg-gray-100'}`}>New</button>
+                                <button onClick={() => updateStatus(order.id, 'Shipped')} className={`px-3 py-1 text-xs rounded border cursor-pointer ${order.status === 'Shipped' ? 'bg-yellow-500 text-white' : 'bg-white hover:bg-gray-100'}`}>Shipped</button>
+                                <button onClick={() => updateStatus(order.id, 'Delivered')} className={`px-3 py-1 text-xs rounded border cursor-pointer ${order.status === 'Delivered' ? 'bg-green-600 text-white' : 'bg-white hover:bg-gray-100'}`}>Delivered</button>
                             </div>
                         </div>
                       </div>
