@@ -322,7 +322,7 @@ export default function Home() {
 
      <div className="space-y-12">
        {/* 2. هنا التعديل المهم: حطينا الترتيب اليدوي اللي انتي عايزاه بالظبط */}
-       {['Ring', 'Bracelet', 'Necklace', 'Handchain', 'Cuff', 'Bangles'].map((category) => {
+       {['Ring', 'Earring','Bracelet', 'Necklace', 'Handchain', 'Cuff', 'Bangles'].map((category) => {
          
          const categoryItems = products.filter(p => p.category === category);
          
