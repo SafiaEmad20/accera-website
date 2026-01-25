@@ -5,51 +5,38 @@ import { supabase } from '../lib/supabase';
 import { Upload, Loader, Plus, X } from 'lucide-react';
 
 export default function AdminPage() {
+  // شلنا stock من هنا
   const [formData, setFormData] = useState({
-    name: '', price: '', category: 'Necklace', material: 'stainless steel', sizes: '', stock: ''
+    name: '', price: '', category: 'Necklace', material: 'stainless steel', sizes: ''
   });
 
-  // هنا بنحدد الألوان اللي عايزينها للمنتج ده
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  
-  // هنا بنخزن صور كل لون (المفتاح هو اسم اللون)
   const [variantImages, setVariantImages] = useState<{[key: string]: { main: File | null, hover: File | null, mainPreview: string | null, hoverPreview: string | null }}>({});
-
   const [loading, setLoading] = useState(false);
 
-  // 1. إدارة الألوان (إضافة/حذف)
   const toggleColor = (color: string) => {
     if (selectedColors.includes(color)) {
       setSelectedColors(selectedColors.filter(c => c !== color));
-      // نمسح صور اللون ده لو لغيناه
       const newImages = { ...variantImages };
       delete newImages[color];
       setVariantImages(newImages);
     } else {
       setSelectedColors([...selectedColors, color]);
-      // نجهز مكان لصور اللون الجديد
       setVariantImages(prev => ({ ...prev, [color]: { main: null, hover: null, mainPreview: null, hoverPreview: null } }));
     }
   };
 
-  // 2. إدارة صور كل لون
   const handleVariantImageSelect = (e: React.ChangeEvent<HTMLInputElement>, color: string, type: 'main' | 'hover') => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const previewUrl = URL.createObjectURL(file);
-      
       setVariantImages(prev => ({
         ...prev,
-        [color]: {
-          ...prev[color],
-          [type]: file,
-          [type === 'main' ? 'mainPreview' : 'hoverPreview']: previewUrl
-        }
+        [color]: { ...prev[color], [type]: file, [type === 'main' ? 'mainPreview' : 'hoverPreview']: previewUrl }
       }));
     }
   };
 
-  // 3. رفع الصور للسيرفر
   const uploadFile = async (file: File) => {
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
@@ -63,28 +50,19 @@ export default function AdminPage() {
     e.preventDefault();
     if (selectedColors.length === 0) return alert("Please select at least one color!");
     
-    // تأكد إن كل لون مختار ليه صورة أساسية على الأقل
     for (const color of selectedColors) {
         if (!variantImages[color]?.main) return alert(`Please select main image for ${color} color!`);
     }
 
     setLoading(true);
     try {
-      // نجهز مصفوفة الـ Variants
       const variantsData = [];
-
       for (const color of selectedColors) {
          const mainUrl = await uploadFile(variantImages[color].main!);
          const hoverUrl = variantImages[color].hover ? await uploadFile(variantImages[color].hover!) : null;
-         
-         variantsData.push({
-            color: color,
-            mainImage: mainUrl,
-            hoverImage: hoverUrl
-         });
+         variantsData.push({ color: color, mainImage: mainUrl, hoverImage: hoverUrl });
       }
       
-      // أول لون هو اللي هيتحط كصورة رئيسية للمنتج من بره
       const primaryVariant = variantsData[0];
 
       const { error } = await supabase.from('products').insert([{
@@ -94,17 +72,16 @@ export default function AdminPage() {
           material: formData.material, 
           sizes: formData.category === 'Ring' ? formData.sizes : null,
           colors: selectedColors.join(','), 
-          stock: Number(formData.stock),
-          image_url: primaryVariant.mainImage, // الصورة الرئيسية
-          image2: primaryVariant.hoverImage,   // الصورة الثانوية
-          variants: variantsData // الداتا الجديدة المهمة
+          stock: 1000, // 👈 ثبتنا الرقم هنا 1000 عشان يفضل متاح دايماً
+          image_url: primaryVariant.mainImage,
+          image2: primaryVariant.hoverImage,
+          variants: variantsData
       }]);
       
       if (error) throw error;
-      alert('Product Added with Color Variants! 🎉');
+      alert('Product Added Successfully! 🎉');
       
-      // Reset Form
-      setFormData({ name: '', price: '', category: 'Necklace', material: 'stainless steel', sizes: '', stock: '' });
+      setFormData({ name: '', price: '', category: 'Necklace', material: 'stainless steel', sizes: '' });
       setSelectedColors([]);
       setVariantImages({});
       
@@ -116,7 +93,6 @@ export default function AdminPage() {
       <h1 className="text-2xl md:text-3xl font-bold mb-8 border-b pb-4 text-[#355E61] font-serif">Add Product (Multi-Color)</h1>
       
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* البيانات الأساسية */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-bold mb-2">Category</label>
@@ -134,10 +110,8 @@ export default function AdminPage() {
 
         <input required placeholder="Product Name" className="w-full p-3 border rounded-lg" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
         
-        <div className="grid grid-cols-2 gap-4">
-           <input required type="number" placeholder="Price (EGP)" className="w-full p-3 border rounded-lg" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} />
-           <input required type="number" placeholder="Stock Qty" className="w-full p-3 border rounded-lg" value={formData.stock} onChange={e => setFormData({...formData, stock: e.target.value})} />
-        </div>
+        {/* شلنا خانة الـ Stock من هنا خلاص */}
+        <input required type="number" placeholder="Price (EGP)" className="w-full p-3 border rounded-lg" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} />
 
         {formData.category === 'Ring' && (
           <div className="bg-gray-50 p-4 rounded-lg border border-dashed border-[#355E61]/20">
@@ -146,7 +120,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* --- اختيار الألوان --- */}
         <div className="bg-gray-50 p-6 rounded-lg border border-[#355E61]/20">
             <label className="block text-lg font-bold mb-4 text-[#355E61] font-serif">1. Select Available Colors</label>
             <div className="flex gap-6 mb-6">
@@ -160,7 +133,6 @@ export default function AdminPage() {
                 </label>
             </div>
 
-            {/* --- رفع الصور لكل لون --- */}
             {selectedColors.length > 0 && (
                 <div className="space-y-6 animate-in slide-in-from-bottom-2">
                     <div className="h-px bg-gray-200 w-full mb-4"></div>
@@ -170,12 +142,10 @@ export default function AdminPage() {
                         <div key={color} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                             <h3 className={`font-bold mb-3 uppercase tracking-widest ${color === 'Gold' ? 'text-[#D4AF37]' : 'text-gray-500'}`}>{color} Version</h3>
                             <div className="grid grid-cols-2 gap-4">
-                                {/* Main Image Upload */}
                                 <div className="h-32 border-2 border-dashed rounded-lg relative flex items-center justify-center overflow-hidden hover:border-[#355E61] bg-gray-50 cursor-pointer group">
                                     {variantImages[color]?.mainPreview ? <img src={variantImages[color].mainPreview!} className="w-full h-full object-cover"/> : <div className="text-center opacity-40"><Upload className="mx-auto w-6 h-6 mb-1"/> <span className="text-[10px] font-bold uppercase block">Main ({color})</span></div>}
                                     <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => handleVariantImageSelect(e, color, 'main')}/>
                                 </div>
-                                {/* Hover Image Upload */}
                                 <div className="h-32 border-2 border-dashed rounded-lg relative flex items-center justify-center overflow-hidden hover:border-[#355E61] bg-gray-50 cursor-pointer group">
                                     {variantImages[color]?.hoverPreview ? <img src={variantImages[color].hoverPreview!} className="w-full h-full object-cover"/> : <div className="text-center opacity-40"><Upload className="mx-auto w-6 h-6 mb-1"/> <span className="text-[10px] font-bold uppercase block">Hover ({color})</span></div>}
                                     <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => handleVariantImageSelect(e, color, 'hover')}/>
