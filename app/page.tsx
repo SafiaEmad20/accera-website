@@ -65,18 +65,69 @@ export default function Home() {
     return subtotal + (SHIPPING_RATES[checkoutForm.governorate] || 95);
   };
 
+  // ------------------------------------------
+  // 👇 دالة إرسال الإشعار لتليجرام (مضافة)
+  // ------------------------------------------
+  const sendTelegramNotification = async (orderData: any, items: any[]) => {
+    const BOT_TOKEN = "8411605350:AAG6tRohwYth_XHqEKNbo6efiPEidua53zM"; 
+    const CHAT_ID = "1135563408"; 
+
+    const itemsList = items.map(i => `- ${i.name} (${i.selectedColor || 'No Color'})`).join('\n');
+    
+    const message = `
+🚨 *New Order Received!* 💰
+------------------------
+👤 *Customer:* ${orderData.customer_name}
+📱 *Phone:* ${orderData.phone}
+📍 *Gov:* ${orderData.governorate}
+------------------------
+🛒 *Items:*
+${itemsList}
+------------------------
+💵 *Total:* ${orderData.total_price} EGP
+    `;
+
+    try {
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: message,
+          parse_mode: 'Markdown'
+        })
+      });
+    } catch (error) {
+      console.error("Telegram Error:", error);
+    }
+  };
+
+  // ------------------------------------------
+  // 👇 دالة تنفيذ الطلب (محدثة)
+  // ------------------------------------------
   const placeOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     const fullAddressString = `Add: ${checkoutForm.fullAddress}, Bldg: ${checkoutForm.buildingNumber}, Floor: ${checkoutForm.floorNumber}, Apt: ${checkoutForm.apartmentNumber}`;
-    const { error } = await supabase.from('orders').insert([{
+    
+    const orderData = {
       customer_name: `${checkoutForm.firstName} ${checkoutForm.secondName}`,
       phone: checkoutForm.phone, phone2: checkoutForm.phone2,
       address: fullAddressString, 
       governorate: checkoutForm.governorate,
       delivery_fee: SHIPPING_RATES[checkoutForm.governorate] || 95,
       items: cart, total_price: calculateTotal()
-    }]);
-    if (!error) { alert(`Order Placed Successfully! 🎉`); setCart([]); setIsCheckoutOpen(false); }
+    };
+
+    const { error } = await supabase.from('orders').insert([orderData]);
+
+    if (!error) { 
+       // نبعت الاشعار
+       await sendTelegramNotification(orderData, cart);
+
+       alert(`Order Placed Successfully! 🎉`); 
+       setCart([]); 
+       setIsCheckoutOpen(false); 
+    }
   };
 
   return (
