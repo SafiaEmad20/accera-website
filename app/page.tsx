@@ -153,9 +153,9 @@ ${itemsList}
           <button onClick={() => { setActiveView('home'); setIsMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="w-full text-left text-xl font-serif py-4 border-b border-white/10 cursor-pointer text-[#F2EFE4]">Home</button>
           <button onClick={() => { setActiveView('shop'); setIsMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="w-full text-left text-xl font-serif py-4 border-b border-white/10 cursor-pointer text-[#F2EFE4]">Shop Collection</button>
           <div className="space-y-2">
-            {['Ring', 'Earring', 'Bracelet', 'Necklace', 'Handchain', 'Cuff', 'Bangles'].map(cat => (
+            {['Ring', 'Earring', 'Bracelet', 'Necklace', 'Handchain', 'Cuff', 'Bangle'].map(cat => (
               <button key={cat} onClick={() => { openCategoryPage(cat); setIsMenuOpen(false); }} className="w-full text-left text-lg opacity-80 py-2 hover:text-[#D4AF37] transition cursor-pointer text-[#F2EFE4]">
-                {cat === 'Bangles' ? cat : `${cat}s`}
+                {cat === 'Bangle' ? cat : `${cat}s`}
               </button>
             ))}
           </div>
@@ -283,13 +283,13 @@ ${itemsList}
               <h1 className="text-3xl font-serif border-l-4 border-white/20 pl-4 uppercase tracking-widest text-[#F2EFE4]">Shop All</h1>
            </div>
            <div className="space-y-12">
-             {['Ring', 'Earring', 'Bracelet', 'Necklace', 'Handchain', 'Cuff', 'Bangles'].map((category) => {
+             {['Ring', 'Earring', 'Bracelet', 'Necklace', 'Handchain', 'Cuff', 'Bangle'].map((category) => {
                const categoryItems = products.filter(p => p.category === category);
                if (categoryItems.length === 0) return null;
                return (
                  <CategoryPreview 
                    key={category} 
-                   title={category === 'Bangles' ? category : `${category}s`} 
+                   title={category === 'Bangle' ? category : `${category}s`} 
                    items={categoryItems} 
                    onViewAll={() => openCategoryPage(category)} 
                    onProductClick={openProductPage} 
