@@ -5,7 +5,6 @@ import { supabase } from '../lib/supabase';
 import { Upload, Loader, Plus, X } from 'lucide-react';
 
 export default function AdminPage() {
-  // شلنا stock من هنا
   const [formData, setFormData] = useState({
     name: '', price: '', category: 'Necklace', material: 'stainless steel', sizes: ''
   });
@@ -13,6 +12,14 @@ export default function AdminPage() {
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [variantImages, setVariantImages] = useState<{[key: string]: { main: File | null, hover: File | null, mainPreview: string | null, hoverPreview: string | null }}>({});
   const [loading, setLoading] = useState(false);
+
+  // 👇 دي قايمة الألوان اللي هتظهرلك (ضفنا الأسود والأبيض)
+  const AVAILABLE_COLORS = [
+    { name: 'Gold', hex: '#D4AF37', style: 'text-[#D4AF37]' },
+    { name: 'Silver', hex: '#C0C0C0', style: 'text-gray-500' },
+    { name: 'Black', hex: '#000000', style: 'text-black' },
+    { name: 'White', hex: '#FFFFFF', style: 'text-gray-400' }, 
+  ];
 
   const toggleColor = (color: string) => {
     if (selectedColors.includes(color)) {
@@ -72,7 +79,7 @@ export default function AdminPage() {
           material: formData.material, 
           sizes: formData.category === 'Ring' ? formData.sizes : null,
           colors: selectedColors.join(','), 
-          stock: 1000, // 👈 ثبتنا الرقم هنا 1000 عشان يفضل متاح دايماً
+          stock: 1000, 
           image_url: primaryVariant.mainImage,
           image2: primaryVariant.hoverImage,
           variants: variantsData
@@ -109,8 +116,6 @@ export default function AdminPage() {
         </div>
 
         <input required placeholder="Product Name" className="w-full p-3 border rounded-lg" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-        
-        {/* شلنا خانة الـ Stock من هنا خلاص */}
         <input required type="number" placeholder="Price (EGP)" className="w-full p-3 border rounded-lg" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} />
 
         {formData.category === 'Ring' && (
@@ -120,17 +125,16 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* --- تعديل: اختيار الألوان بشكل أوتوماتيك --- */}
         <div className="bg-gray-50 p-6 rounded-lg border border-[#355E61]/20">
             <label className="block text-lg font-bold mb-4 text-[#355E61] font-serif">1. Select Available Colors</label>
-            <div className="flex gap-6 mb-6">
-                <label className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition p-2 bg-white rounded border border-gray-200 shadow-sm">
-                    <input type="checkbox" checked={selectedColors.includes('Gold')} onChange={() => toggleColor('Gold')} className="w-5 h-5 accent-[#D4AF37]" />
-                    <span className="font-bold text-[#D4AF37]">Gold</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition p-2 bg-white rounded border border-gray-200 shadow-sm">
-                    <input type="checkbox" checked={selectedColors.includes('Silver')} onChange={() => toggleColor('Silver')} className="w-5 h-5 accent-gray-500" />
-                    <span className="font-bold text-gray-500">Silver</span>
-                </label>
+            <div className="flex flex-wrap gap-4 mb-6">
+                {AVAILABLE_COLORS.map((col) => (
+                  <label key={col.name} className={`flex items-center gap-2 cursor-pointer hover:opacity-80 transition p-3 bg-white rounded-lg border shadow-sm ${selectedColors.includes(col.name) ? 'border-[#355E61] ring-1 ring-[#355E61]' : 'border-gray-200'}`}>
+                      <input type="checkbox" checked={selectedColors.includes(col.name)} onChange={() => toggleColor(col.name)} className={`w-5 h-5 accent-[#355E61]`} />
+                      <span className={`font-bold ${col.style}`}>{col.name}</span>
+                  </label>
+                ))}
             </div>
 
             {selectedColors.length > 0 && (
@@ -140,7 +144,7 @@ export default function AdminPage() {
                     
                     {selectedColors.map(color => (
                         <div key={color} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                            <h3 className={`font-bold mb-3 uppercase tracking-widest ${color === 'Gold' ? 'text-[#D4AF37]' : 'text-gray-500'}`}>{color} Version</h3>
+                            <h3 className="font-bold mb-3 uppercase tracking-widest text-gray-700">{color} Version</h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="h-32 border-2 border-dashed rounded-lg relative flex items-center justify-center overflow-hidden hover:border-[#355E61] bg-gray-50 cursor-pointer group">
                                     {variantImages[color]?.mainPreview ? <img src={variantImages[color].mainPreview!} className="w-full h-full object-cover"/> : <div className="text-center opacity-40"><Upload className="mx-auto w-6 h-6 mb-1"/> <span className="text-[10px] font-bold uppercase block">Main ({color})</span></div>}
